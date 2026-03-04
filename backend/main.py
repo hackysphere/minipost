@@ -1,4 +1,6 @@
 import logging
+import db
+from fastapi import FastAPI
 
 # loggers can be inherited, so this can be configured in the main file
 # however, other loggers must be set up after this is run (so imports must have an init function or similar)
@@ -15,10 +17,10 @@ logging.basicConfig(
     ],
 )
 
+app = FastAPI()
+database = db.Database()
 
-def main():
-    logging.info("loaded main app")
+@app.get("/api/posts/latest")
+def get_latest_posts():
+    return database.pull_posts(15)
 
-
-if __name__ == "__main__":
-    main()
