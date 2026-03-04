@@ -1,13 +1,12 @@
+import random
 import unittest
 import db
 
 
 class TestPostOps(unittest.TestCase):
     def setUp(self):
-        import random
-
         self.locallist = []
-        db.init(":memory:")
+        self.db = db.Database(":memory:")
 
         for _ in range(10):
             self.locallist.append(
@@ -16,13 +15,13 @@ class TestPostOps(unittest.TestCase):
                     "posted_on": random.randint(0, 100000),
                 }
             )
-            db.push_post(self.locallist[-1])
+            self.db.push_post(self.locallist[-1])
 
     def test_pull_posts(self):
-        self.assertEqual(self.locallist, db.pull_posts())
+        self.assertEqual(self.locallist, self.db.pull_posts())
 
     def test_pull_few_posts(self):
-        self.assertEqual(self.locallist[-2:], db.pull_posts(2))
+        self.assertEqual(self.locallist[-2:], self.db.pull_posts(2))
 
 
 if __name__ == "__main__":
