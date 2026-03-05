@@ -2,12 +2,14 @@
 (name pending)
 
 project that attempts to make a social media-like app  
-uses python for backend and svelte for frontend
+uses python for backend and svelte for frontend  
 
-dev notes still in progress  
-docker deploy notes still in progress
+docker deploy notes still in progress  
 
 ## basic dev notes
+python steps assume you are in the backend folder  
+svelte steps assume you are in the frontend folder  
+
 ### required dependencies
 python:
 - uv
@@ -22,34 +24,22 @@ svelte:
         1. run `npm install --global corepack@latest`
         1. run `corepack enable pnpm`
 
-### project setup
-python:
-1. enter the backend folder
-1. run `uv sync`
+pre-commit (global):
+1. install uv
+1. `uv tool install pre-commit`
+1. `uv tool pre-commit install`
 
-svelte:
-1. enter the frontend folder
-1. run `pnpm i`
+to manually run do `uv tool pre-commit run`
 
-### run dev server
-python:
-1. enter the backend folder
-1. run `uv run fastapi dev`
+### python
+install dependencies with `uv sync`  
+run the dev server with `uv run fastapi dev`  
+format files with `uv run ruff format`  
+lint files with `uv run ruff check` (and run with the `--fix` flag to try auto-fixes)  
+type check with `uv run ty check`  
 
-svelte:
-1. enter the frontend folder
-1. run `pnpm dev`
-
-### formatting and linting
-(no pre-commit hooks yet)
-
-python:
-1. enter the backend folder
-1. run `uv run ruff check`
-1. run `uv run ty check`
-
-svelte:
-1. enter the frontend folder
-1. run `pnpm lint`
-    - if errors are found, try `pnpm lint:fix` to try to fix them automatically
-1. run `pnpm fmt`
+### svelte
+install dependencies with `pnpm install`  
+run the dev server with `pnpm dev`  
+format files with `pnpm fmt`  
+lint files with `pnpm lint` (and append `:fix` to try auto-fixes)  

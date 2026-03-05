@@ -8,14 +8,14 @@ from typing import TypedDict, Literal
 _logger = logging.getLogger(__name__)
 
 
-class DBSchema(TypedDict):
-    posts: list[Post]
-
-
 class Post(TypedDict):
     uuid: uuid.UUID
     posted_on: int
     content: str
+
+
+class DBSchema(TypedDict):
+    posts: list[Post]
 
 
 class Database:

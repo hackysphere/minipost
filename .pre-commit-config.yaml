@@ -1,0 +1,36 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  # generic
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+      # - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+
+  # python
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.4
+    hooks:
+      - id: ruff-check
+      - id: ruff-format
+  - repo: local
+    hooks:
+      - id: ty
+        name: ty check
+        entry: ty check --python backend/.venv
+        language: python
+        types_or: [python, pyi, jupyter]
+        additional_dependencies: [ty]
+
+  # svelte
+  - repo: https://github.com/oxc-project/mirrors-oxfmt
+    rev: 3c7999c43590548921418ba746ae49d2c0851222 # FIXME: still waiting on tag to be added to their repo
+    hooks:
+      - id: oxfmt
+  - repo: https://github.com/oxc-project/mirrors-oxlint
+    rev: v1.51.0
+    hooks:
+      - id: oxlint
