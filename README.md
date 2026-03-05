@@ -31,6 +31,15 @@ svelte:
 1. enter the frontend folder
 1. run `pnpm i`
 
+### run dev server
+python:
+1. enter the backend folder
+1. run `uv run fastapi dev`
+
+svelte:
+1. enter the frontend folder
+1. run `pnpm dev`
+
 ### formatting and linting
 (no pre-commit hooks yet)
 
