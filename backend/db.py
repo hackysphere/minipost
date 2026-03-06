@@ -22,7 +22,7 @@ class Database:
     def __init__(self, path: str | Literal[":memory:"] = "./app.db") -> None:
         # path can be :memory: in sqlite3 for tests without writing to file
         self.database: DBSchema = DBSchema(posts=[])
-        _logger.info("initialized database")
+        _logger.info(f"initialized database at {path}")
 
     def pull_latest_posts(self, count=15) -> list[Post]:
         max_return = 30
@@ -43,4 +43,4 @@ class Database:
         for post in self.database["posts"]:
             if post["uuid"] == uuid:
                 return post
-        raise KeyError("Post with given UUID not found")
+        raise KeyError(f"Post with UUID {uuid} not found")
