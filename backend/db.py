@@ -5,7 +5,7 @@ import logging
 import uuid
 from typing import TypedDict, Literal
 
-_logger = logging.getLogger(__name__)
+_logger = logging.getLogger("uvicorn.socialapp")
 
 
 class Post(TypedDict):
@@ -37,10 +37,11 @@ class Database:
             content=content,
         )
         self.database["posts"].append(post)
+        _logger.info(f"post added with uuid {post['uuid']}")
         return post
 
-    def get_post(self, uuid: uuid.UUID) -> Post:
+    def get_post(self, post_uuid: uuid.UUID) -> Post:
         for post in self.database["posts"]:
-            if post["uuid"] == uuid:
+            if post["uuid"] == post_uuid:
                 return post
-        raise KeyError(f"Post with UUID {uuid} not found")
+        raise KeyError(f"Post with UUID {post_uuid} not found")
