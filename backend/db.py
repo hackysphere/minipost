@@ -28,7 +28,9 @@ class Database:
         max_return = 30
         if count > max_return:
             count = max_return
-        return self.database["posts"][-count:]
+        queried_posts = self.database["posts"][-count:]
+        queried_posts.reverse()
+        return queried_posts
 
     def push_post(self, content: str) -> Post:
         post = Post(

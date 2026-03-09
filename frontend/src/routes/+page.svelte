@@ -11,6 +11,10 @@
 	<PostCard content={post} />
 {/each}
 
+{#if data.latest_posts.length === 0}
+	<p>there are no posts!</p>
+{/if}
+
 <style>
 	h1 {
 		padding-left: 4rem;

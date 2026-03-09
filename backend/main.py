@@ -2,6 +2,7 @@ from typing import Annotated
 import uvicorn
 import uuid
 import db
+import sys
 from fastapi import FastAPI, status, HTTPException, Body
 from fastapi.routing import APIRoute
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,16 +17,16 @@ def generate_unique_api_id(route: APIRoute):
 
 
 app = FastAPI(generate_unique_id_function=generate_unique_api_id)
-app.add_middleware(
-    CORSMiddleware,  # ty:ignore[invalid-argument-type]
-    allow_origins=[
-        "http://localhost:5173",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-# do not use async functions, as sqlite3 in python doesn't support async
+if "dev" in sys.argv:
+    app.add_middleware(
+        CORSMiddleware,  # ty:ignore[invalid-argument-type]
+        allow_origins=[
+            "http://localhost:5173",
+        ],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 
 @app.get("/api/posts/latest")
