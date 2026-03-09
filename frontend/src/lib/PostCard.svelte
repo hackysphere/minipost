@@ -1,9 +1,10 @@
 <script lang="ts">
-	let { content }: { content: string | number } = $props();
+	import type { Post } from "./openapi/types.gen";
+	let { content }: { content: Post } = $props();
 </script>
 
 <div class="root-card">
-	<p>{content}</p>
+	<p>{content.content}</p>
 </div>
 
 <style>

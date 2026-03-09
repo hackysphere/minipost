@@ -43,3 +43,10 @@ install dependencies with `pnpm install`
 run the dev server with `pnpm dev`  
 format files with `pnpm fmt`  
 lint files with `pnpm lint` (and append `:fix` to try auto-fixes)  
+if svelte types are having issues, run `pnpm prepare` (using the dev server avoids this issue)  
+
+### shared types
+the backend is the source for types, svelte will inherit them through translation  
+to regenerate types for svelte/typescript:
+1. start the fastapi dev server
+1. run `pnpm openapigen` in the backend folder
