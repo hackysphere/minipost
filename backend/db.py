@@ -28,9 +28,12 @@ class Database:
         max_return = 30
         if count > max_return:
             count = max_return
-        queried_posts = self.database["posts"][-count:]
-        queried_posts.reverse()
-        return queried_posts
+        if count < 1:
+            count = 1
+
+        # this exists so that i don't need to create two "databases" (sql will probably fix this)
+        count += 1  # the post of index -count isn't counted in python's stop point for the slice, so it has to be +1
+        return self.database["posts"][:-count:-1]
 
     def push_post(self, content: str) -> Post:
         post = Post(
