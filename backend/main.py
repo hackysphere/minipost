@@ -2,11 +2,13 @@ from typing import Annotated
 import uvicorn
 import uuid
 import db
+import sys
 import logging
 import logging.handlers
 from fastapi import FastAPI, status, HTTPException, Body
+from fastapi.routing import APIRoute
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
 
 # this only saves my logs, for builtin uvicorn loggers see: https://stackoverflow.com/a/77007723
 file_logger = logging.handlers.RotatingFileHandler(
@@ -26,7 +28,24 @@ logger.info("starting up app")
 
 database = db.Database()
 
-# do not use async functions, as sqlite3 in python doesn't support async
+
+def generate_unique_api_id(route: APIRoute):
+    # in the case that endpoint duplicates are created, add tags to all routes and uncomment the below line
+    # return f"{route.tags[0]}-{route.name}"
+    return f"{route.name}"
+
+
+app = FastAPI(generate_unique_id_function=generate_unique_api_id)
+if "dev" in sys.argv:
+    app.add_middleware(
+        CORSMiddleware,  # ty:ignore[invalid-argument-type]
+        allow_origins=[
+            "http://localhost:5173",
+        ],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 
 @app.get("/api/posts/latest")

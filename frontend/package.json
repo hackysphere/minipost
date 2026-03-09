@@ -13,16 +13,18 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
+    "fmt:check": "oxfmt --check",
+    "openapigen": "openapi-ts"
   },
   "devDependencies": {
-    "@sveltejs/adapter-auto": "^7.0.0",
-    "@sveltejs/kit": "^2.50.2",
+    "@hey-api/openapi-ts": "0.94.0",
+    "@sveltejs/adapter-static": "^3.0.10",
+    "@sveltejs/kit": "^2.53.4",
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "oxfmt": "^0.35.0",
-    "oxlint": "^1.50.0",
-    "svelte": "^5.51.0",
-    "svelte-check": "^4.3.6",
+    "oxlint": "^1.51.0",
+    "svelte": "^5.53.7",
+    "svelte-check": "^4.4.5",
     "typescript": "^5.9.3",
     "vite": "^7.3.1"
   }
