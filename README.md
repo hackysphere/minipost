@@ -41,7 +41,7 @@ type check with `uv run ty check`
 ### svelte
 install dependencies with `pnpm install`  
 run the dev server with `pnpm dev`  
-format files with `pnpm fmt`  
+format files with `pnpm format`  
 lint files with `pnpm lint` (and append `:fix` to try auto-fixes)  
 if svelte types are having issues, run `pnpm prepare` (using the dev server avoids this issue)  
 

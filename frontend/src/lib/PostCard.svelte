@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Post } from "./openapi/types.gen";
+
 	let { content }: { content: Post } = $props();
 </script>
 

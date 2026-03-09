@@ -26,11 +26,7 @@ repos:
         additional_dependencies: [ty]
 
   # svelte
-  - repo: https://github.com/oxc-project/mirrors-oxfmt
-    rev: 3c7999c43590548921418ba746ae49d2c0851222 # FIXME: still waiting on tag to be added to their repo
+  - repo: https://github.com/biomejs/pre-commit
+    rev: v2.4.6
     hooks:
-      - id: oxfmt
-  - repo: https://github.com/oxc-project/mirrors-oxlint
-    rev: v1.51.0
-    hooks:
-      - id: oxlint
+      - id: biome-check

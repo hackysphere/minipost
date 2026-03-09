@@ -1,0 +1,11 @@
+{
+	"$schema": "frontend/node_modules/@biomejs/biome/configuration_schema.json",
+	"html": {
+		"experimentalFullSupportEnabled": true
+	},
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	}
+}
