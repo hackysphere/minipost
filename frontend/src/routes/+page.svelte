@@ -7,7 +7,7 @@
 
 <h1>global timeline</h1>
 
-{#each data.latest_posts as post}
+{#each data.latest_posts as post (post.uuid)}
 	<PostCard content={post} />
 {/each}
 

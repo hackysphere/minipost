@@ -101,7 +101,7 @@ export type PushPostData = {
 	body: string;
 	path?: never;
 	query?: never;
-	url: "/api/posts/publish";
+	url: "/api/posts/new";
 };
 
 export type PushPostErrors = {

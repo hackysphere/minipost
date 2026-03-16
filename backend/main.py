@@ -53,7 +53,7 @@ def get_latest_posts(count: int = 15) -> list[db.Post]:
     return database.pull_latest_posts(count)
 
 
-@app.post("/api/posts/publish", status_code=status.HTTP_201_CREATED)
+@app.post("/api/posts/new", status_code=status.HTTP_201_CREATED)
 def push_post(body: Annotated[str, Body(media_type="text/plain")]) -> db.Post:
     return database.push_post(body)
 
