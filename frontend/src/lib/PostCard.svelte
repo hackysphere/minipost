@@ -10,10 +10,10 @@
 
 <style>
 	.root-card {
-		background-color: hsl(237deg, 16%, 23%);
+		background-color: var(--ctp-mocha-surface0);
 		padding: 5px;
 		margin: 10px;
-		border: solid 2px hsl(231deg, 11%, 47%); 
+		border: solid 2px var(--ctp-mocha-overlay0); 
 		border-radius: 13px;
 	}
 </style>

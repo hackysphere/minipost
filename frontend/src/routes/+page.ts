@@ -12,6 +12,9 @@ export const load: PageLoad = async ({ fetch }) => {
 		console.log(err);
 		error(404, "Failed to fetch latest posts, you might be offline?");
 	}
+	if (!response.ok) {
+		error(500, "Server failed to send posts");
+	}
 	const latest_posts: GetLatestPostsResponse = await response.json();
 	return { latest_posts };
 };
