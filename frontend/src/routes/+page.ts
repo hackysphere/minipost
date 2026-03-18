@@ -7,7 +7,7 @@ import type { PageLoad } from "./$types";
 export const load: PageLoad = async ({ fetch }) => {
 	let response: Response;
 	try {
-		response = await fetch(`${rootURL}api/posts/latest`);
+		response = await fetch(`${rootURL}/api/posts/latest`);
 	} catch (err) {
 		console.log(err);
 		error(404, "Failed to fetch latest posts, you might be offline?");

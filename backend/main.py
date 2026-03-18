@@ -35,8 +35,8 @@ def generate_unique_api_id(route: APIRoute):
     return f"{route.name}"
 
 
-app = FastAPI(generate_unique_id_function=generate_unique_api_id)
 if "dev" in sys.argv:
+    app = FastAPI(generate_unique_id_function=generate_unique_api_id)
     app.add_middleware(
         CORSMiddleware,  # ty:ignore[invalid-argument-type]
         allow_origins=[
@@ -45,6 +45,13 @@ if "dev" in sys.argv:
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+    )
+else:
+    app = FastAPI(
+        generate_unique_id_function=generate_unique_api_id,
+        docs_url=None,
+        redoc_url=None,
+        openapi_url=None,
     )
 
 

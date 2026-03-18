@@ -10,8 +10,6 @@
 </svelte:head>
 
 <style>
-	/* all using catppuccin mocha colors */
-	/* TODO: set up better color selection (either vars or js module) */
 	:global(html) {
 		background-color: var(--ctp-mocha-base);
 		color: var(--ctp-mocha-text);
@@ -33,16 +31,26 @@
 		border-width: 0 0 5px;
 		font-weight: 600;
 	}
+
+	nav * {
+		margin: 0px 7px;
+	}
 	
 	nav a {
 		text-decoration-line: none;
 		color: var(--ctp-mocha-teal);
+		transition-duration: 100ms;
+	}
+	nav a:hover {
+		color: var(--ctp-mocha-green);
 	}
 </style>
 
 <div id="app">
 	<nav>
+		<span>social-app--frontend</span>
 		<a href="/">home</a>
+		<a href="/newpost">post</a>
 	</nav>
 
 	{@render children()}
