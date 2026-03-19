@@ -64,7 +64,7 @@ def get_latest_posts(count: int = 15) -> list[db.Post]:
 
 @app.post("/api/posts/new", status_code=status.HTTP_201_CREATED)
 def push_post(body: Annotated[str, Body(media_type="text/plain")]) -> db.Post:
-    if len(body) == 0:
+    if len(body.strip()) == 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Empty post content"
         )
