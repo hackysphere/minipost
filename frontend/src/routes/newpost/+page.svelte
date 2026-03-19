@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import { rootURL } from "$lib/constants";
 
 	let errorValue: string | null = $state(null);
 	let postContent = $state("");
@@ -8,7 +7,7 @@
 	// biome-ignore lint/correctness/noUnusedVariables: biome is not detecting usage in svelte property
 	function sendPost() {
 		if (postContent.trim() !== "") {
-			fetch(`${rootURL}/api/posts/new`, {
+			fetch("/api/posts/new", {
 				method: "POST",
 				body: postContent,
 			})
