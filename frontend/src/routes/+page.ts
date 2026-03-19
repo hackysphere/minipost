@@ -10,7 +10,7 @@ export const load: PageLoad = async ({ fetch }) => {
 		response = await fetch(`${rootURL}/api/posts/latest`);
 	} catch (err) {
 		console.log(err);
-		error(404, "Failed to fetch latest posts, you might be offline?");
+		error(500, "Server failed to send posts (is the backend enabled?)");
 	}
 	if (!response.ok) {
 		error(500, "Server failed to send posts");

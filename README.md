@@ -50,3 +50,7 @@ the backend is the source for types, svelte will inherit them through translatio
 to regenerate types for svelte/typescript:
 1. start the fastapi dev server
 1. run `pnpm openapigen` in the backend folder
+
+## building & running
+1. run `pnpm build` in the frontend folder
+1. run the app with `uv run fastapi run` in the backend folder

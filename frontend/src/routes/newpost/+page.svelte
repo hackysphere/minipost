@@ -5,17 +5,20 @@
 	let errorValue: string | null = $state(null);
 	let postContent = $state("");
 
-	function sendPost(): void {
+	// biome-ignore lint/correctness/noUnusedVariables: biome is not detecting usage in svelte property
+	function sendPost() {
 		if (postContent !== "") {
 			fetch(`${rootURL}/api/posts/new`, {
 				method: "POST",
 				body: postContent,
 			})
-				.then(() => {
-					goto("/");
+				.then((res) => {
+					if (res.status === 201) goto("/");
+					else if (res.status === 400) errorValue = "Your post cannot be empty";
+					else errorValue = "Error submitting post";
 				})
-				.catch((err) => {
-					errorValue = err;
+				.catch(() => {
+					errorValue = "Failed to submit post, server may be offline";
 				});
 		}
 	}
@@ -25,7 +28,7 @@
 <textarea placeholder="enter your post..." bind:value={postContent}></textarea>
 <button type="submit" onclick={sendPost}>publish!</button>
 {#if errorValue}
-	<p class="error">Error when sending post: {errorValue}</p>
+	<p class="error">{errorValue}</p>
 {/if}
 
 <style>

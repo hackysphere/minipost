@@ -8,7 +8,9 @@ import logging.handlers
 from fastapi import FastAPI, status, HTTPException, Body
 from fastapi.routing import APIRoute
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
+DEVMODE = "dev" in sys.argv
 
 # this only saves my logs, for builtin uvicorn loggers see: https://stackoverflow.com/a/77007723
 file_logger = logging.handlers.RotatingFileHandler(
@@ -35,7 +37,7 @@ def generate_unique_api_id(route: APIRoute):
     return f"{route.name}"
 
 
-if "dev" in sys.argv:
+if DEVMODE:
     app = FastAPI(generate_unique_id_function=generate_unique_api_id)
     app.add_middleware(
         CORSMiddleware,  # ty:ignore[invalid-argument-type]
@@ -62,6 +64,10 @@ def get_latest_posts(count: int = 15) -> list[db.Post]:
 
 @app.post("/api/posts/new", status_code=status.HTTP_201_CREATED)
 def push_post(body: Annotated[str, Body(media_type="text/plain")]) -> db.Post:
+    if len(body) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Empty post content"
+        )
     return database.push_post(body)
 
 
@@ -71,7 +77,32 @@ def get_post_by_uuid(post_uuid: uuid.UUID) -> db.Post:
         return database.get_post(post_uuid)
     except KeyError as err:
         logger.info(f"failed to get post {post_uuid}")
-        raise HTTPException(404, err.args[0])
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
+
+
+# below are the dynamic routes (for the frontend and special api 404s)
+# they must be placed last so that they don't override previous routes
+
+
+@app.get("/api", include_in_schema=False)
+@app.get("/api/{path:path}", include_in_schema=False)
+def invalid_api_route() -> None:
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND, detail="API route not found"
+    )
+
+
+if not DEVMODE:
+    app.mount("/", StaticFiles(directory="../frontend/build/", html=True))
+else:
+
+    @app.get("/", include_in_schema=False)
+    @app.get("/{path:path}", include_in_schema=False)
+    def no_frontend_in_dev() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="FastAPI is running in dev mode, so the hosted frontend has been disabled.",
+        )
 
 
 if __name__ == "__main__":

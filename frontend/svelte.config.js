@@ -3,11 +3,12 @@ import adapter from "@sveltejs/adapter-static";
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	kit: {
-		// adapter-auto only supports some environments, see https://svelte.dev/docs/kit/adapter-auto for a list.
-		// If your environment is not supported, or you settled on a specific environment, switch out the adapter.
-		// See https://svelte.dev/docs/kit/adapters for more information about adapters.
 		adapter: adapter({
-			fallback: "200.html", // https://svelte.dev/docs/kit/single-page-apps#Usage
+			// fastapi will serve a 404.html if there are no routes found
+			// this makes all routes go through the 404, which means sveltekit can successfully do CSR!!
+			// this also allows for dynamic routes
+			// this does not affect anything, as prerendering without SSR will give the same "shell" pages as the 404.html
+			fallback: "404.html",
 		}),
 	},
 };
