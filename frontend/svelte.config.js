@@ -4,10 +4,8 @@ import adapter from "@sveltejs/adapter-static";
 const config = {
 	kit: {
 		adapter: adapter({
-			// fastapi will serve a 404.html if there are no routes found
-			// this makes all routes go through the 404, which means sveltekit can successfully do CSR!!
-			// this also allows for dynamic routes
-			// this does not affect anything, as prerendering without SSR will give the same "shell" pages as the 404.html
+			// fastapi will serve a 404.html if there are no routes found, so dynamic routes can actually be done in a wonky way
+			// (it will still return a 404 for the html, but everything else will be fine)
 			fallback: "404.html",
 		}),
 	},
