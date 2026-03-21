@@ -48,4 +48,4 @@ ENV PATH="/app/backend/.venv/bin:$PATH"
 WORKDIR /app/backend
 
 EXPOSE 8000
-CMD ["fastapi", "run", "main.py"]
+CMD ["fastapi", "run", "app/main.py"]

@@ -1,7 +1,6 @@
 from typing import Annotated
 import uvicorn
 import uuid
-import db
 import sys
 import logging
 import logging.handlers
@@ -9,6 +8,7 @@ from fastapi import FastAPI, status, HTTPException, Body
 from fastapi.routing import APIRoute
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from . import db
 
 DEVMODE = "dev" in sys.argv
 
@@ -105,6 +105,10 @@ else:
         )
 
 
+def run_uvicorn():
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
 if __name__ == "__main__":
     # this can be used for debugging
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    run_uvicorn()

@@ -1,6 +1,6 @@
 import random
 import unittest
-import db
+from app import db
 
 
 class TestPostOps(unittest.TestCase):
