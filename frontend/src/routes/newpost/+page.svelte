@@ -4,7 +4,6 @@
 	let errorValue: string | null = $state(null);
 	let postContent = $state("");
 
-	// biome-ignore lint/correctness/noUnusedVariables: biome is not detecting usage in svelte property
 	function sendPost() {
 		if (postContent.trim() !== "") {
 			fetch("/api/posts/new", {
