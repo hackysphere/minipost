@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   biome:
-    name: Biome CI
+    name: Biome CI lint and format
     runs-on: ubuntu-slim
     steps:
       - name: Checkout repo
@@ -17,11 +17,33 @@ jobs:
         with:
           working-dir: "./frontend"
 
-      - name: Lint and format backend
+      - name: Lint and format frontend
         run: "biome ci --reporter=github ./frontend"
 
+  svelte-check:
+    name: svelte-check type check
+    runs-on: ubuntu-slim
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: "pnpm install"
+        working-directory: "./frontend"
+
+      # NOTE: svelte-check does not support github-style diagnostics
+      - name: Type check frontend
+        run: "pnpx svelte-check --workspace ./frontend"
+
   ruff:
-    name: Ruff lint & format
+    name: Ruff lint and format
     runs-on: ubuntu-slim
     steps:
       - name: Checkout repo
@@ -54,7 +76,7 @@ jobs:
           working-directory: "./backend"
 
       - name: Install dependencies
-        run: "uv sync --locked"
+        run: "uv sync"
         working-directory: "./backend"
 
       - name: Type check backend
