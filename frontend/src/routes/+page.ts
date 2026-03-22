@@ -14,6 +14,6 @@ export const load: PageLoad = async ({ fetch }) => {
 	if (!response.ok) {
 		error(500, "Server failed to send posts");
 	}
-	const latest_posts: GetLatestPostsResponse = await response.json();
-	return { latest_posts };
+	const latestPosts: GetLatestPostsResponse = await response.json();
+	return { latest_posts: latestPosts };
 };

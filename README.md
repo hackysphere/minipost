@@ -6,6 +6,14 @@ uses python for backend and svelte for frontend
 
 docker deploy notes still in progress  
 
+## deploying with docker
+there is no image made yet, so it must be manually built by entering into the project root and running `docker build -t social-app .`  
+the image can be run with `docker run --rm -p 8000:8000 social-app`  
+run with docker compose in the project root with `docker compose up -d`
+
+TODO proxy config with docker  
+TODO volumes for db
+
 ## basic dev notes
 python steps assume you are in the backend folder  
 svelte steps assume you are in the frontend folder  

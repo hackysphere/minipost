@@ -1,0 +1,10 @@
+name: social-app
+
+services:
+  social-app:
+    container_name: social-app
+    build: .
+    # no image to pull yet
+    ports:
+      - 8000:8000
+    restart: unless-stopped
