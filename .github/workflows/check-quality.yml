@@ -3,6 +3,23 @@ permissions: read-all
 on: [push]
 
 jobs:
+  biome:
+    name: Biome CI
+    runs-on: ubuntu-slim
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Install biome
+        uses: biomejs/setup-biome@v2
+        with:
+          working-dir: "./frontend"
+
+      - name: Lint and format backend
+        run: "biome ci --reporter=github ./frontend"
+
   ruff:
     name: Ruff lint & format
     runs-on: ubuntu-slim
