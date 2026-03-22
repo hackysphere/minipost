@@ -1,0 +1,83 @@
+name: Code quality checks
+permissions: read-all
+on: [push]
+
+jobs:
+  biome:
+    name: Biome CI lint and format
+    runs-on: ubuntu-slim
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Install biome
+        uses: biomejs/setup-biome@v2
+        with:
+          working-dir: "./frontend"
+
+      - name: Lint and format frontend
+        run: "biome ci --reporter=github ./frontend"
+
+  svelte-check:
+    name: svelte-check type check
+    runs-on: ubuntu-slim
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: "pnpm install"
+        working-directory: "./frontend"
+
+      # NOTE: svelte-check does not support github-style diagnostics
+      - name: Type check frontend
+        run: "pnpx svelte-check --workspace ./frontend"
+
+  ruff:
+    name: Ruff lint and format
+    runs-on: ubuntu-slim
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Lint backend
+        uses: astral-sh/ruff-action@v3
+        with:
+          src: "./backend"
+
+      # since the ruff actions adds ruff to PATH, this is okay
+      - name: Format backend
+        run: "ruff format --check --diff ./backend"
+        if: always() # force check to be done even if linting failed
+
+  ty:
+    name: ty typecheck
+    runs-on: ubuntu-slim
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          working-directory: "./backend"
+
+      - name: Install dependencies
+        run: "uv sync"
+        working-directory: "./backend"
+
+      - name: Type check backend
+        run: "uvx ty check --python ./backend/.venv --output-format github ./backend"
