@@ -20,6 +20,7 @@ jobs:
       # since the ruff actions adds ruff to PATH, this is okay
       - name: Format backend
         run: "ruff format --check --diff ./backend"
+        if: always() # force check to be done even if linting failed
 
   ty:
     name: ty typecheck
@@ -34,6 +35,10 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           working-directory: "./backend"
+
+      - name: Install dependencies
+        run: "uv sync --locked"
+        working-directory: "./backend"
 
       - name: Type check backend
         run: "uvx ty check --python ./backend/.venv --output-format github ./backend"
