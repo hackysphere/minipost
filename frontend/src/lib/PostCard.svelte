@@ -13,7 +13,7 @@
 		background-color: var(--ctp-mocha-surface0);
 		padding: 5px;
 		margin: 10px;
-		border: solid 2px var(--ctp-mocha-overlay0); 
+		border: solid 2px var(--ctp-mocha-overlay0);
 		border-radius: 13px;
 	}
 </style>

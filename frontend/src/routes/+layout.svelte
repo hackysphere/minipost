@@ -1,13 +1,11 @@
 <script lang="ts">
 	import favicon from "$lib/assets/favicon.svg";
-	import "./global.css"
+	import "./global.css";
 
 	let { children } = $props();
 </script>
 
-<svelte:head>
-	<link rel="icon" href={favicon} />
-</svelte:head>
+<svelte:head> <link rel="icon" href={favicon}> </svelte:head>
 
 <style>
 	:global(html) {
@@ -35,7 +33,7 @@
 	nav * {
 		margin: 0px 7px;
 	}
-	
+
 	nav a {
 		text-decoration-line: none;
 		color: var(--ctp-mocha-teal);

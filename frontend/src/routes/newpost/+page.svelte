@@ -16,9 +16,10 @@
 							goto("/");
 							break;
 						case 400:
-							res.text()
-								.then((err) => errorValue = `Parsing error: ${err}`)
-								.catch(() => errorValue = "Parsing error when sending post");
+							res
+								.text()
+								.then((err) => (errorValue = `Parsing error: ${err}`))
+								.catch(() => (errorValue = "Parsing error when sending post"));
 							break;
 						default:
 							errorValue = "Error submitting post";
