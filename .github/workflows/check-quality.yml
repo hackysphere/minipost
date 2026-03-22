@@ -1,6 +1,9 @@
 name: Code quality checks
 permissions: read-all
-on: [push]
+on:
+  push:
+  pull_request:
+
 
 jobs:
   biome:
