@@ -1,8 +1,8 @@
-name: social-app
+name: minipost
 
 services:
-  social-app:
-    container_name: social-app
+  minipost:
+    container_name: minipost
     build: .
     # no image to pull yet
     ports:

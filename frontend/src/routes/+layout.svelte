@@ -5,7 +5,10 @@
 	let { children } = $props();
 </script>
 
-<svelte:head> <link rel="icon" href={favicon}> </svelte:head>
+<svelte:head>
+	<link rel="icon" href={favicon}>
+	<title>minipost</title>
+</svelte:head>
 
 <style>
 	:global(html) {
@@ -46,7 +49,7 @@
 
 <div id="app">
 	<nav>
-		<span>social-app--frontend</span>
+		<span>minipost</span>
 		<a href="/">home</a>
 		<a href="/newpost">post</a>
 	</nav>

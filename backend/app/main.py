@@ -26,9 +26,9 @@ logger = logging.getLogger("uvicorn.socialapp")
 logger.addHandler(file_logger)
 logger.setLevel(logging.INFO)
 
-logger.info("starting up app")
-
 database = db.Database()
+
+logger.info("welcome to minipost!")
 
 
 def generate_unique_api_id(route: APIRoute):

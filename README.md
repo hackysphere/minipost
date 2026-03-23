@@ -1,62 +1,38 @@
-# social-app
-(name pending)
-
-project that attempts to make a social media-like app  
+# minipost
+app that posts to a temporary global timeline  
 uses python for backend and svelte for frontend  
 
-docker deploy notes still in progress  
-
 ## deploying with docker
-there is no image made yet, so it must be manually built by entering into the project root and running `docker build -t social-app .`  
-the image can be run with `docker run --rm -p 8000:8000 social-app`  
-run with docker compose in the project root with `docker compose up -d`
+there is no image made yet, so it must be manually built by running `docker build -t minipost .`  
+the image can be run with `docker run --rm -p 8000:8000 minipost`  
+run with docker compose with `docker compose up -d`
 
 TODO proxy config with docker  
 TODO volumes for db
 
-## basic dev notes
-python steps assume you are in the backend folder  
-svelte steps assume you are in the frontend folder  
-
+## development
 ### required dependencies
-python:
-- uv
-    - [install manually](https://docs.astral.sh/uv/getting-started/installation) *or*
-    - install through pip: `pip install uv` or `pipx install uv` (not tested)
+- uv: https://docs.astral.sh/uv/getting-started/installation)
+- pnpm: https://pnpm.io/installation
+- node (if using standalone pnpm, run `pnpm env use --global lts`)
 
-svelte:
-- pnpm
-    - [install manually](https://pnpm.io/installation) *or*
-    - install through npm: `npm install -g pnpm@latest-10` (not tested) *or*
-    - install through corepack: (not tested)
-        1. run `npm install --global corepack@latest`
-        1. run `corepack enable pnpm`
+### pre-commit
+install uv before doing these steps  
+install pre-commit hooks with `uvx pre-commit install`  
+manually run hooks with `uvx pre-commit run`
 
-pre-commit (global):
-1. install uv
-1. `uv tool install pre-commit`
-1. `uv tool pre-commit install`
-
-to manually run do `uv tool pre-commit run`
-
-### python
-install dependencies with `uv sync`  
-run the dev server with `uv run fastapi dev`  
-format files with `uv run ruff format`  
-lint files with `uv run ruff check` (and run with the `--fix` flag to try auto-fixes)  
-type check with `uv run ty check`  
-
-### svelte
-install dependencies with `pnpm install`  
-run the dev server with `pnpm dev`  
-format files with `pnpm format`  
-lint files with `pnpm lint` (and append `:fix` to try auto-fixes)  
-type check with `pnpm check`
-if svelte types are having issues, run `pnpm prepare` (using the dev server avoids this issue)  
+### commands
+|                      | python (in /backend)                           | typescript (in /frontend)                        |
+| -------------------- | ---------------------------------------------- | ------------------------------------------------ |
+| install dependencies | `uv sync`                                      | `pnpm install`                                   |
+| dev server           | `uv run fastapi dev`                           | `pnpm dev`                                       |
+| format               | `uv run ruff format`                           | `pnpm format`                                    |
+| lint                 | `uv run ruff check ` (add `--fix` to auto-fix) | `pnpm lint` (append `:fix` to auto-fix)          |
+| type check           | `uv run ty check`                              | `pnpm check`                                     |
 
 ### shared types
-the backend is the source for types, svelte will inherit them through translation  
-to regenerate types for svelte/typescript:
+the backend is the source for types, the frontend will inherit them through translation  
+to regenerate types for typescript:
 1. start the fastapi dev server
 1. run `pnpm openapigen` in the backend folder
 
