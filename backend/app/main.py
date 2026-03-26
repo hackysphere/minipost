@@ -13,18 +13,22 @@ from . import db
 DEVMODE = "dev" in sys.argv
 
 # this only saves my logs, for builtin uvicorn loggers see: https://stackoverflow.com/a/77007723
+logger_formatter = logging.Formatter(
+    "{asctime} {levelname} - {module}: {message}", style="{"
+)
 file_logger = logging.handlers.RotatingFileHandler(
-    "app.log",
+    "minipost.log",
     maxBytes=5000000,  # 5MB
     backupCount=5,
 )
-file_logger.setFormatter(
-    logging.Formatter("{asctime} {levelname} - {module}: {message}", style="{")
-)
-# this is prefixed with uvicorn so that it shows up automatically in the console
-logger = logging.getLogger("uvicorn.socialapp")
+file_logger.setFormatter(logger_formatter)
+console_logger = logging.StreamHandler()
+console_logger.setFormatter(logger_formatter)
+logger = logging.getLogger("socialapp")
 logger.addHandler(file_logger)
+logger.addHandler(console_logger)
 logger.setLevel(logging.INFO)
+
 
 database = db.Database()
 

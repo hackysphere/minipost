@@ -22,6 +22,7 @@ install pre-commit hooks with `uvx pre-commit install`
 manually run hooks with `uvx pre-commit run`
 
 ### commands
+
 |                      | python (in /backend)                           | typescript (in /frontend)                        |
 | -------------------- | ---------------------------------------------- | ------------------------------------------------ |
 | install dependencies | `uv sync`                                      | `pnpm install`                                   |

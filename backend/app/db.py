@@ -1,11 +1,11 @@
 # in theory, even if multiple imports occur, the database connections should still work because sqlite3 supports multi-reads and multi-writes through locks
 # FIXME: temporary memory-based impl for now, replace with sqlite3
-import time
 import logging
+import time
 import uuid
-from typing import TypedDict, Literal
+from typing import Literal, TypedDict
 
-_logger = logging.getLogger("uvicorn.socialapp")
+_logger = logging.getLogger("socialapp")
 
 
 class Post(TypedDict):
@@ -19,7 +19,7 @@ class DBSchema(TypedDict):
 
 
 class Database:
-    def __init__(self, path: str | Literal[":memory:"] = "./app.db") -> None:
+    def __init__(self, path: str | Literal[":memory:"] = "./minipost.db") -> None:
         # path can be :memory: in sqlite3 for tests without writing to file
         self.database: DBSchema = DBSchema(posts=[])
         _logger.info(f"initialized database at {path}")
