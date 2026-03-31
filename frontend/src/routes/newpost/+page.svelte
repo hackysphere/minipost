@@ -35,16 +35,14 @@
 				});
 		}
 	}
-
-	addEventListener("keydown", (event) => {
-		if (event.ctrlKey && event.key === "Enter") {
-			sendPost();
-		}
-	});
 </script>
 
-<h1 style="user-select: none;">create a post</h1>
-<textarea placeholder="enter your post..." bind:value={postContent}></textarea>
+<h1>create a post</h1>
+<textarea
+	placeholder="enter your post..."
+	bind:value={postContent}
+	onkeydown={(event) => event.ctrlKey && event.key === "Enter" && sendPost()}
+></textarea>
 <button type="submit" onclick={sendPost}>publish!</button>
 <span style="color: var(--ctp-mocha-subtext0)">(ctrl+enter)</span>
 {#if errorValue}

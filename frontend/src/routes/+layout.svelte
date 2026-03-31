@@ -19,25 +19,32 @@
 	:global(a) {
 		color: var(--ctp-mocha-sapphire);
 	}
+	:global(h1) {
+		user-select: none;
+	}
 
-	#app {
+	:root {
 		max-width: 750px;
 		margin: 0 auto;
 	}
 
 	nav {
-		padding: 5px;
+		padding: 5px 0px;
 		border-style: solid;
 		border-color: var(--ctp-mocha-teal);
 		border-width: 0 0 5px;
 		font-weight: 600;
 		user-select: none;
+		display: flex;
+		justify-content: space-between;
+	}
+	nav div {
+		display: inline-flex;
 	}
 
-	nav * {
+	nav div * {
 		margin: 0px 7px;
 	}
-
 	nav a {
 		text-decoration-line: none;
 		color: var(--ctp-mocha-teal);
@@ -48,12 +55,13 @@
 	}
 </style>
 
-<div id="app">
-	<nav>
+<nav>
+	<div>
 		<span>minipost</span>
 		<a href="/">home</a>
 		<a href="/newpost">post</a>
-	</nav>
+		<a href="/about">about</a>
+	</div>
+</nav>
 
-	{@render children()}
-</div>
+{@render children()}
