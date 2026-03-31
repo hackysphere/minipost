@@ -15,5 +15,7 @@
 		margin: 10px;
 		border: solid 2px var(--ctp-mocha-overlay0);
 		border-radius: 13px;
+		word-break: break-word;
+		white-space: preserve;
 	}
 </style>

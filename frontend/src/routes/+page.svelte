@@ -5,7 +5,7 @@
 	let { data }: PageProps = $props();
 </script>
 
-<h1>global timeline</h1>
+<h1 style="user-select: none;">global timeline</h1>
 
 {#each data.latest_posts as post (post.uuid)}
 	<PostCard content={post} />

@@ -31,6 +31,7 @@
 		border-color: var(--ctp-mocha-teal);
 		border-width: 0 0 5px;
 		font-weight: 600;
+		user-select: none;
 	}
 
 	nav * {
