@@ -83,4 +83,4 @@ jobs:
         working-directory: "./backend"
 
       - name: Type check backend
-        run: "uvx ty check --python ./backend/.venv --output-format github ./backend"
+        run: "uvx ty check --project ./backend --output-format github"

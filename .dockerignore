@@ -2,6 +2,7 @@
 **/.env
 **/*.log
 **/.gitignore
+**/*.db
 
 **/.pytest_cache
 **/.ruff_cache

@@ -1,7 +1,7 @@
 repos:
   # generic
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0
+    rev: v6.0.0
     hooks:
       # - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -10,7 +10,7 @@ repos:
 
   # python
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.4
+    rev: v0.15.8
     hooks:
       - id: ruff-check
         args: [backend] # set the project directory
@@ -24,11 +24,11 @@ repos:
         language: python
         types_or: [python, pyi, jupyter]
         additional_dependencies: [ty]
-        args: [--python=backend/.venv]
+        args: [--project=backend]
 
   # svelte
   - repo: https://github.com/biomejs/pre-commit
-    rev: v2.4.6
+    rev: v2.4.10
     hooks:
       - id: biome-check
         args: [backend] # set the project directory

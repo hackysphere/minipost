@@ -1,4 +1,5 @@
 import random
+import tempfile
 import unittest
 
 from app import db
@@ -6,13 +7,17 @@ from app import db
 
 class TestPostOps(unittest.TestCase):
     def setUp(self):
+        self.db_file = tempfile.NamedTemporaryFile()
+        self.db = db.Database(self.db_file.name)
         self.local_posts: list[db.Post] = []
-        self.db = db.Database(":memory:")
 
         for _ in range(10):
             self.local_posts.append(self.db.push_post(str(random.random())))
 
         self.reverse_local_posts = self.local_posts[::-1]
+
+    def tearDown(self):
+        self.db_file.close()
 
     def test_pull_latest_posts(self):
         self.assertListEqual(self.reverse_local_posts, self.db.pull_latest_posts())

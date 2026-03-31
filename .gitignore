@@ -4,3 +4,4 @@
 .__pycache__
 .svelte-kit
 node_modules
+*.db
