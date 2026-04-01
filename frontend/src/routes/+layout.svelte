@@ -45,6 +45,9 @@
 	nav div * {
 		margin: 0px 7px;
 	}
+	nav div *:first-child {
+		margin: 0px;
+	}
 	nav a {
 		text-decoration-line: none;
 		color: var(--ctp-mocha-teal);
@@ -57,6 +60,7 @@
 
 <nav>
 	<div>
+		<img src={favicon} style="margin: 0;" alt="">
 		<span>minipost</span>
 		<a href="/">home</a>
 		<a href="/newpost">post</a>
