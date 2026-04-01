@@ -1,6 +1,7 @@
 import random
 import tempfile
 import unittest
+import uuid
 
 from app import db
 
@@ -12,7 +13,9 @@ class TestPostOps(unittest.TestCase):
         self.local_posts: list[db.Post] = []
 
         for _ in range(10):
-            self.local_posts.append(self.db.push_post(str(random.random())))
+            self.local_posts.append(
+                self.db.push_post(content=str(random.random()), user=str(uuid.uuid4()))
+            )
 
         self.reverse_local_posts = self.local_posts[::-1]
 

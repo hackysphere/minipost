@@ -6,7 +6,7 @@ import type { PageLoad } from "./$types";
 export const load: PageLoad = async ({ fetch }) => {
 	let response: Response;
 	try {
-		response = await fetch("/api/posts/latest");
+		response = await fetch("/api/posts");
 	} catch (err) {
 		console.log(err);
 		error(500, "Server failed to send posts (is the backend enabled?)");

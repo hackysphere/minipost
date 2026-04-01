@@ -1,10 +1,10 @@
-from typing import Annotated
+from pydantic import BaseModel
 import uvicorn
 import uuid
 import sys
 import logging
 import logging.handlers
-from fastapi import FastAPI, status, HTTPException, Body
+from fastapi import FastAPI, status, HTTPException
 from fastapi.routing import APIRoute
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -61,21 +61,32 @@ else:
     )
 
 
-@app.get("/api/posts/latest")
+class NewPostBody(BaseModel):
+    content: str
+    username: str = "null"
+
+
+@app.get("/api/posts")
 def get_latest_posts(count: int = 15) -> list[db.Post]:
     return database.pull_latest_posts(count)
 
 
-@app.post("/api/posts/new", status_code=status.HTTP_201_CREATED)
-def push_post(body: Annotated[str, Body(media_type="text/plain")]) -> db.Post:
-    if len(body.strip()) == 0:
+@app.post("/api/posts", status_code=status.HTTP_201_CREATED)
+def push_post(body: NewPostBody) -> db.Post:
+    if len(body.content.strip()) == 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Empty post content"
         )
-    return database.push_post(body)
+
+    if len(body.username.strip()) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="No username provided"
+        )
+
+    return database.push_post(content=body.content, user=body.username)
 
 
-@app.get("/api/posts/uuid/{post_uuid}")
+@app.get("/api/posts/{post_uuid}")
 def get_post_by_uuid(post_uuid: uuid.UUID) -> db.Post:
     try:
         return database.get_post(post_uuid)

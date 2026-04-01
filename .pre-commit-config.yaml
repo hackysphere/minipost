@@ -24,7 +24,7 @@ repos:
         language: python
         types_or: [python, pyi, jupyter]
         additional_dependencies: [ty]
-        args: [--project=backend]
+        args: [--project=backend, --python=backend/.venv]
 
   # svelte
   - repo: https://github.com/biomejs/pre-commit

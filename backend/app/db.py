@@ -11,6 +11,7 @@ class Post(TypedDict):
     uuid: uuid.UUID
     posted_on: float
     content: str
+    username: str
 
 
 def init_database(path: str):
@@ -21,6 +22,7 @@ def init_database(path: str):
                         id TEXT NOT NULL UNIQUE,
                         posted_on REAL NOT NULL,
                         content TEXT NOT NULL,
+                        username TEXT NOT NULL,
                         PRIMARY KEY("id")
                  )
                   """)
@@ -52,24 +54,31 @@ class Database:
                 uuid=uuid.UUID(post[0]),
                 posted_on=post[1],
                 content=post[2],
+                username=post[3],
             )
             for post in posts
         ]
 
         return posts_typed
 
-    def push_post(self, content: str) -> Post:
+    def push_post(self, content: str, user: str) -> Post:
         post = Post(
             uuid=uuid.uuid4(),
             posted_on=time.time(),
             content=content,
+            username=user,
         )
 
         with sqlite3.connect(self.path) as connection:
             cursor = connection.cursor()
             cursor.execute(
-                "INSERT INTO Posts (id, posted_on, content) VALUES (?, ?, ?)",
-                (str(post["uuid"]), post["posted_on"], post["content"]),
+                "INSERT INTO Posts (id, posted_on, content, username) VALUES (?, ?, ?, ?)",
+                (
+                    str(post["uuid"]),
+                    post["posted_on"],
+                    post["content"],
+                    post["username"],
+                ),
             )
             connection.commit()
 
@@ -87,6 +96,7 @@ class Database:
                 uuid=uuid.UUID(post[0]),
                 posted_on=post[1],
                 content=post[2],
+                username=post[3],
             )
             return post_typed
         raise KeyError(f"Post with UUID {post_uuid} not found")

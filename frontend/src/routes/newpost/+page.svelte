@@ -3,12 +3,17 @@
 
 	let errorValue: string | null = $state(null);
 	let postContent = $state("");
+	let postUsername = $state("");
 
 	function sendPost() {
-		if (postContent.trim() !== "") {
-			fetch("/api/posts/new", {
+		if (postContent.trim() !== "" && postUsername.trim() !== "") {
+			fetch("/api/posts", {
 				method: "POST",
-				body: postContent,
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					content: postContent,
+					username: postUsername,
+				}),
 			})
 				.then((res) => {
 					switch (res.status) {
@@ -18,10 +23,10 @@
 						case 400:
 							res
 								.text()
-								.then(
-									(err) =>
-										(errorValue = `Server parsing error when sending post: ${err}`),
-								)
+								.then((err_response) => {
+									let jsonerr = JSON.parse(err_response);
+									errorValue = `Server parsing error when sending post: ${jsonerr.detail}`;
+								})
 								.catch(
 									() => (errorValue = "Server parsing error when sending post"),
 								);
@@ -38,6 +43,7 @@
 </script>
 
 <h1>create a post</h1>
+<input placeholder="username" bind:value={postUsername}>
 <textarea
 	placeholder="enter your post..."
 	bind:value={postContent}
@@ -50,7 +56,8 @@
 {/if}
 
 <style>
-	textarea {
+	textarea,
+	input {
 		font-family: Inter, sans-serif;
 		background-color: var(--ctp-mocha-surface1);
 		color: var(--ctp-mocha-text);

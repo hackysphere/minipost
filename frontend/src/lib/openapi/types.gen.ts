@@ -15,6 +15,20 @@ export type HttpValidationError = {
 };
 
 /**
+ * NewPostBody
+ */
+export type NewPostBody = {
+	/**
+	 * Content
+	 */
+	content: string;
+	/**
+	 * Username
+	 */
+	username: string;
+};
+
+/**
  * Post
  */
 export type Post = {
@@ -30,6 +44,10 @@ export type Post = {
 	 * Content
 	 */
 	content: string;
+	/**
+	 * Username
+	 */
+	username: string;
 };
 
 /**
@@ -69,7 +87,7 @@ export type GetLatestPostsData = {
 		 */
 		count?: number;
 	};
-	url: "/api/posts/latest";
+	url: "/api/posts";
 };
 
 export type GetLatestPostsErrors = {
@@ -95,13 +113,10 @@ export type GetLatestPostsResponse =
 	GetLatestPostsResponses[keyof GetLatestPostsResponses];
 
 export type PushPostData = {
-	/**
-	 * Body
-	 */
-	body: string;
+	body: NewPostBody;
 	path?: never;
 	query?: never;
-	url: "/api/posts/new";
+	url: "/api/posts";
 };
 
 export type PushPostErrors = {
@@ -131,7 +146,7 @@ export type GetPostByUuidData = {
 		post_uuid: string;
 	};
 	query?: never;
-	url: "/api/posts/uuid/{post_uuid}";
+	url: "/api/posts/{post_uuid}";
 };
 
 export type GetPostByUuidErrors = {
