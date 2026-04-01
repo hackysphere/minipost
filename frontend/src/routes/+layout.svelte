@@ -19,6 +19,9 @@
 	:global(a) {
 		color: var(--ctp-mocha-sapphire);
 	}
+	:global(a:hover) {
+		color: var(--ctp-mocha-blue);
+	}
 	:global(h1) {
 		user-select: none;
 	}
@@ -56,13 +59,22 @@
 	nav a:hover {
 		color: var(--ctp-mocha-green);
 	}
+
+	nav .logo-link {
+		color: var(--ctp-mocha-text);
+		display: flex;
+	}
+	nav .logo-link:hover {
+		color: var(--ctp-mocha-subtext0);
+	}
 </style>
 
 <nav>
 	<div>
-		<img src={favicon} style="margin: 0;" alt="">
-		<span>minipost</span>
-		<a href="/">home</a>
+		<a href="/" class="logo-link">
+			<img src={favicon} alt="">
+			<span>minipost</span>
+		</a>
 		<a href="/newpost">post</a>
 		<a href="/about">about</a>
 	</div>
