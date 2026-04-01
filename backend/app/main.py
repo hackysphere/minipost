@@ -95,6 +95,15 @@ def get_post_by_uuid(post_uuid: uuid.UUID) -> db.Post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
 
 
+@app.get("/api/users/{username}/posts")
+def get_posts_from_user(username: str) -> list[db.Post]:
+    try:
+        return database.get_user_posts(username)
+    except KeyError as err:
+        logger.info(f"no posts from user {username}")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
+
+
 # below are the dynamic routes (for the frontend and special api 404s)
 # they must be placed last so that they don't override previous routes
 

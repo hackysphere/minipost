@@ -29,6 +29,15 @@ def init_database(path: str):
         connection.commit()
 
 
+def add_types_to_sql_post(sql_output: list):
+    return Post(
+        uuid=uuid.UUID(sql_output[0]),
+        posted_on=sql_output[1],
+        content=sql_output[2],
+        username=sql_output[3],
+    )
+
+
 class Database:
     def __init__(self, path: str | Literal[":memory:"] = "./minipost.db") -> None:
         self.path = path
@@ -49,15 +58,7 @@ class Database:
             )
             posts = cursor.fetchall()
 
-        posts_typed = [
-            Post(
-                uuid=uuid.UUID(post[0]),
-                posted_on=post[1],
-                content=post[2],
-                username=post[3],
-            )
-            for post in posts
-        ]
+        posts_typed = [add_types_to_sql_post(post) for post in posts]
 
         return posts_typed
 
@@ -92,11 +93,18 @@ class Database:
             post = cursor.fetchone()
 
         if post:
-            post_typed = Post(
-                uuid=uuid.UUID(post[0]),
-                posted_on=post[1],
-                content=post[2],
-                username=post[3],
-            )
-            return post_typed
+            return add_types_to_sql_post(post)
         raise KeyError(f"Post with UUID {post_uuid} not found")
+
+    def get_user_posts(self, username: str) -> list[Post]:
+        with sqlite3.connect(self.path) as connection:
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM Posts WHERE username = ?", (username,))
+            posts = cursor.fetchall()
+
+        if not posts:
+            raise KeyError(f"Posts from user with username {username} not found")
+
+        posts_typed = [add_types_to_sql_post(post) for post in posts]
+
+        return posts_typed

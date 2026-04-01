@@ -25,7 +25,7 @@ export type NewPostBody = {
 	/**
 	 * Username
 	 */
-	username: string;
+	username?: string;
 };
 
 /**
@@ -167,3 +167,37 @@ export type GetPostByUuidResponses = {
 
 export type GetPostByUuidResponse =
 	GetPostByUuidResponses[keyof GetPostByUuidResponses];
+
+export type GetPostsFromUserData = {
+	body?: never;
+	path: {
+		/**
+		 * Username
+		 */
+		username: string;
+	};
+	query?: never;
+	url: "/api/users/{username}/posts";
+};
+
+export type GetPostsFromUserErrors = {
+	/**
+	 * Validation Error
+	 */
+	422: HttpValidationError;
+};
+
+export type GetPostsFromUserError =
+	GetPostsFromUserErrors[keyof GetPostsFromUserErrors];
+
+export type GetPostsFromUserResponses = {
+	/**
+	 * Response Get Posts From User
+	 *
+	 * Successful Response
+	 */
+	200: Array<Post>;
+};
+
+export type GetPostsFromUserResponse =
+	GetPostsFromUserResponses[keyof GetPostsFromUserResponses];
