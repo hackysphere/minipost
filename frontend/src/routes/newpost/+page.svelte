@@ -40,14 +40,24 @@
 				});
 		}
 	}
+
+	function shortcutHandler(event: KeyboardEvent) {
+		if (event.ctrlKey && event.key === "Enter") {
+			sendPost();
+		}
+	}
 </script>
 
 <h1>create a post</h1>
-<input placeholder="username" bind:value={postUsername}>
+<input
+	placeholder="username"
+	bind:value={postUsername}
+	onkeydown={shortcutHandler}
+>
 <textarea
 	placeholder="enter your post..."
 	bind:value={postContent}
-	onkeydown={(event) => event.ctrlKey && event.key === "Enter" && sendPost()}
+	onkeydown={shortcutHandler}
 ></textarea>
 <button type="submit" onclick={sendPost}>publish!</button>
 <span style="color: var(--ctp-mocha-subtext0)">(ctrl+enter)</span>

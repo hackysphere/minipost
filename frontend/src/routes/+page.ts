@@ -2,8 +2,10 @@ import { error } from "@sveltejs/kit";
 import type { GetLatestPostsResponse } from "$lib/openapi/types.gen";
 import type { PageLoad } from "./$types";
 
-// supports the params parameter, but since it is unused, biome wants me to remove it
 export const load: PageLoad = async ({ fetch }) => {
+	// this is defined in an odd way because this is the main page
+	// if vite's proxy breaks or something, this will show it first
+	// don't do this anywhere else, assume the server is working
 	let response: Response;
 	try {
 		response = await fetch("/api/posts");

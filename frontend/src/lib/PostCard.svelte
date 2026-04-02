@@ -5,8 +5,9 @@
 </script>
 
 <div class="root-card">
-	<small>&Tab;{content.username}</small>
+	<a class="username" href={`/user/${content.username}`}>{content.username}</a>
 	<p>{content.content}</p>
+	<a class="uuid" href={`/post/${content.uuid}`}>{content.uuid}</a>
 </div>
 
 <style>
@@ -22,7 +23,15 @@
 		word-break: break-word;
 		white-space: preserve;
 	}
-	.root-card small {
+	.root-card .username {
 		color: var(--ctp-mocha-lavender);
+		font-size: 0.85em;
+		margin-left: 2em;
+	}
+	.root-card .username:hover {
+		color: var(--ctp-mocha-mauve);
+	}
+	.root-card .uuid {
+		font-size: 0.7em;
 	}
 </style>
