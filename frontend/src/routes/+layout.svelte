@@ -71,6 +71,7 @@
 
 <nav>
 	<div>
+		<!-- FIXME: this element breaks if font size is changed (squished when bigger, big logo when smaller) -->
 		<a href="/" class="logo-link">
 			<img src={favicon} alt="">
 			<span>minipost</span>
