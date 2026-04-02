@@ -5,5 +5,5 @@
 	let { data }: PageProps = $props();
 </script>
 
-<h1>post {data.uuid}</h1>
-<PostCard content={data} />
+<h1>post {data.post.uuid}</h1>
+<PostCard content={data.post} />
