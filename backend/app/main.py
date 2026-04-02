@@ -9,6 +9,7 @@ from fastapi.routing import APIRoute
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from . import db
+from . import constants
 
 DEVMODE = "dev" in sys.argv
 
@@ -63,7 +64,7 @@ else:
 
 class NewPostBody(BaseModel):
     content: str
-    username: str = "null"
+    username: str
 
 
 @app.get("/api/posts")
@@ -73,14 +74,31 @@ def get_latest_posts(count: int = 15) -> list[db.Post]:
 
 @app.post("/api/posts", status_code=status.HTTP_201_CREATED)
 def push_post(body: NewPostBody) -> db.Post:
-    if len(body.content.strip()) == 0:
+    post_content = body.content.strip()
+    post_username = body.username.strip()
+
+    # null checks
+    if len(post_content) == 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Empty post content"
         )
-
-    if len(body.username.strip()) == 0:
+    if len(post_username) == 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="No username provided"
+        )
+
+    if (
+        len(post_username) > constants.USERNAME_MAX_CHARS
+        or len(post_username) < constants.USERNAME_MIN_CHARS
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Username must be between {constants.USERNAME_MIN_CHARS} and {constants.USERNAME_MAX_CHARS} characters",
+        )
+    if len(post_content) > constants.POST_MAX_CHARS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Post cannot be more than {constants.POST_MAX_CHARS} characters",
         )
 
     return database.push_post(content=body.content, user=body.username)
