@@ -1,8 +1,12 @@
+# turns out sqlite3 context doesn't close connections by itself automatically: https://docs.python.org/3/library/sqlite3.html#how-to-use-the-connection-context-manager
+import contextlib
 import logging
 import sqlite3
 import time
 import uuid
 from typing import Literal, TypedDict
+
+from . import constants
 
 _logger = logging.getLogger("socialapp")
 
@@ -15,7 +19,7 @@ class Post(TypedDict):
 
 
 def init_database(path: str):
-    with sqlite3.connect(path) as connection:
+    with contextlib.closing(sqlite3.connect(path)) as connection:
         cursor = connection.cursor()
         cursor.execute("""
                   CREATE TABLE IF NOT EXISTS Posts (
@@ -51,7 +55,7 @@ class Database:
         if count < 1:
             count = 1
 
-        with sqlite3.connect(self.path) as connection:
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = connection.cursor()
             cursor.execute(
                 "SELECT * FROM Posts ORDER BY posted_on DESC LIMIT ?", (count,)
@@ -70,7 +74,7 @@ class Database:
             username=user,
         )
 
-        with sqlite3.connect(self.path) as connection:
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = connection.cursor()
             cursor.execute(
                 "INSERT INTO Posts (id, posted_on, content, username) VALUES (?, ?, ?, ?)",
@@ -81,13 +85,30 @@ class Database:
                     post["username"],
                 ),
             )
+            # this is here because a user's posts only get added to in this function (until replying to posts becomes a thing)
+            cursor.execute(
+                """DELETE FROM Posts
+                WHERE username = ?
+                AND id NOT IN (
+                    SELECT id FROM Posts
+                    WHERE username = ?
+                    ORDER BY posted_on DESC
+                    LIMIT ?
+                )
+                """,
+                (
+                    post["username"],
+                    post["username"],
+                    constants.USER_MAX_POSTS,
+                ),
+            )
             connection.commit()
 
         _logger.info(f"post added with uuid {post['uuid']}")
         return post
 
     def get_post(self, post_uuid: uuid.UUID) -> Post:
-        with sqlite3.connect(self.path) as connection:
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = connection.cursor()
             cursor.execute("SELECT * FROM Posts WHERE id = ?", (str(post_uuid),))
             post = cursor.fetchone()
@@ -97,9 +118,12 @@ class Database:
         raise KeyError(f"Post with UUID {post_uuid} not found")
 
     def get_user_posts(self, username: str) -> list[Post]:
-        with sqlite3.connect(self.path) as connection:
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = connection.cursor()
-            cursor.execute("SELECT * FROM Posts WHERE username = ?", (username,))
+            cursor.execute(
+                "SELECT * FROM Posts WHERE username = ? ORDER BY posted_on DESC",
+                (username,),
+            )
             posts = cursor.fetchall()
 
         if not posts:

@@ -3,7 +3,7 @@ import tempfile
 import unittest
 import uuid
 
-from app import db
+from app import db, constants
 
 
 class TestPostOps(unittest.TestCase):
@@ -17,18 +17,18 @@ class TestPostOps(unittest.TestCase):
                 self.db.push_post(content=str(random.random()), user=str(uuid.uuid4()))
             )
 
-        self.reverse_local_posts = self.local_posts[::-1]
+        self.local_posts = self.local_posts[::-1]
 
     def tearDown(self):
         self.db_file.close()
 
     def test_pull_latest_posts(self):
-        self.assertListEqual(self.reverse_local_posts[:15], self.db.pull_latest_posts())
+        self.assertListEqual(self.local_posts[:15], self.db.pull_latest_posts())
 
     def test_pull_few_posts(self):
         pull_amount = 2
         self.assertListEqual(
-            self.reverse_local_posts[:pull_amount],
+            self.local_posts[:pull_amount],
             self.db.pull_latest_posts(pull_amount),
         )
 
@@ -55,12 +55,21 @@ class TestUsernameOps(unittest.TestCase):
                 self.db.push_post(content=str(random.random()), user=self.user2)
             )
 
+        self.posts_user1 = self.posts_user1[::-1]
+        self.posts_user2 = self.posts_user2[::-1]
+
     def tearDown(self):
         self.db_file.close()
 
     def test_get_user_posts(self):
-        self.assertListEqual(self.db.get_user_posts(self.user1), self.posts_user1)
-        self.assertListEqual(self.db.get_user_posts(self.user2), self.posts_user2)
+        self.assertListEqual(
+            self.db.get_user_posts(self.user1),
+            self.posts_user1[: constants.USER_MAX_POSTS],
+        )
+        self.assertListEqual(
+            self.db.get_user_posts(self.user2),
+            self.posts_user2[: constants.USER_MAX_POSTS],
+        )
 
 
 if __name__ == "__main__":
