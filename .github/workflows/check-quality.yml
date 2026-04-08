@@ -2,6 +2,8 @@ name: Code quality checks
 permissions: read-all
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 
