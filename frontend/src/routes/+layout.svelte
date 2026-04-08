@@ -46,7 +46,8 @@
 	}
 
 	nav div * {
-		margin: 0px 7px;
+		/* using rem/em here preserves spacing when changing root font size */
+		margin: 0 0.3em;
 	}
 	nav div *:first-child {
 		margin: 0px;
@@ -63,15 +64,18 @@
 	nav .logo-link {
 		color: var(--ctp-mocha-text);
 		display: flex;
+		align-items: center;
 	}
 	nav .logo-link:hover {
 		color: var(--ctp-mocha-subtext0);
+	}
+	nav .logo-link img {
+		height: 1em;
 	}
 </style>
 
 <nav>
 	<div>
-		<!-- FIXME: this element breaks if font size is changed (squished when bigger, big logo when smaller) -->
 		<a href="/" class="logo-link">
 			<img src={favicon} alt="">
 			<span>minipost</span>
