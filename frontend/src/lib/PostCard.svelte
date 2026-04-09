@@ -42,6 +42,7 @@
 		gap: 5px 2em; /* pixels because line spacing, em because text spacing on same line */
 		flex-wrap: wrap;
 		color: var(--ctp-mocha-subtext0);
+		font-family: JetBrainsMono, monospace;
 	}
 	.uuid {
 		word-break: break-all;

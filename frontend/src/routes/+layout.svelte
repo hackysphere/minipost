@@ -11,11 +11,6 @@
 </svelte:head>
 
 <style>
-	:global(html) {
-		background-color: var(--ctp-mocha-base);
-		color: var(--ctp-mocha-text);
-		font-family: Inter, sans-serif;
-	}
 	:global(a) {
 		color: var(--ctp-mocha-sapphire);
 	}
@@ -29,6 +24,9 @@
 	:root {
 		max-width: 750px;
 		margin: 0 auto;
+		background-color: var(--ctp-mocha-base);
+		color: var(--ctp-mocha-text);
+		font-family: Inter, sans-serif;
 	}
 
 	nav {
