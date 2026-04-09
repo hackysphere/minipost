@@ -25,7 +25,7 @@ export type NewPostBody = {
 	/**
 	 * Username
 	 */
-	username?: string;
+	username: string;
 };
 
 /**

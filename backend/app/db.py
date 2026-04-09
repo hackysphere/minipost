@@ -13,7 +13,7 @@ _logger = logging.getLogger("socialapp")
 
 class Post(TypedDict):
     uuid: uuid.UUID
-    posted_on: float
+    posted_on: int
     content: str
     username: str
 
@@ -69,7 +69,7 @@ class Database:
     def push_post(self, content: str, user: str) -> Post:
         post = Post(
             uuid=uuid.uuid4(),
-            posted_on=time.time(),
+            posted_on=time.time_ns(),  # no python floating-point weirdness
             content=content,
             username=user,
         )
