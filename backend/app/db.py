@@ -24,7 +24,7 @@ def init_database(path: str):
         cursor.execute("""
                   CREATE TABLE IF NOT EXISTS Posts (
                         id TEXT NOT NULL UNIQUE,
-                        posted_on REAL NOT NULL,
+                        posted_on INTEGER NOT NULL,
                         content TEXT NOT NULL,
                         username TEXT NOT NULL,
                         PRIMARY KEY("id")
