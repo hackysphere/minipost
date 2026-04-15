@@ -109,7 +109,15 @@ def get_post_by_uuid(post_uuid: uuid.UUID) -> db.Post:
     try:
         return database.get_post(post_uuid)
     except KeyError as err:
-        logger.info(f"failed to get post {post_uuid}")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
+
+
+# FIXME: this doesn't have auth checks right now because auth is not implemented
+@app.delete("/api/posts/{post_uuid}")
+def delete_post_by_uuid(post_uuid: uuid.UUID):
+    try:
+        database.delete_post(post_uuid)
+    except KeyError as err:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
 
 

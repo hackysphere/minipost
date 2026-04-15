@@ -117,6 +117,21 @@ class Database:
             return add_types_to_sql_post(post)
         raise KeyError(f"Post with UUID {post_uuid} not found")
 
+    def delete_post(self, post_uuid: uuid.UUID):
+        # this is probably not efficient to check if a post exists first
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM Posts WHERE id = ?", (str(post_uuid),))
+            post = cursor.fetchone()
+
+        if not post:
+            raise KeyError(f"Post with UUID {post_uuid} not found")
+
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
+            cursor = connection.cursor()
+            cursor.execute("DELETE FROM Posts WHERE id = ?", (str(post_uuid),))
+            connection.commit()
+
     def get_user_posts(self, username: str) -> list[Post]:
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = connection.cursor()
