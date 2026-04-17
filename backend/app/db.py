@@ -6,7 +6,7 @@ import time
 import uuid
 from typing import Literal, TypedDict
 
-from . import constants
+from . import config
 
 _logger = logging.getLogger("socialapp")
 
@@ -99,7 +99,7 @@ class Database:
                 (
                     post["username"],
                     post["username"],
-                    constants.USER_MAX_POSTS,
+                    config.USER_MAX_POSTS,
                 ),
             )
             connection.commit()

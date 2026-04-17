@@ -3,7 +3,7 @@ import tempfile
 import unittest
 import uuid
 
-from app import db, constants
+from app import db, config
 
 
 class TestPostOps(unittest.TestCase):
@@ -64,11 +64,11 @@ class TestUsernameOps(unittest.TestCase):
     def test_get_user_posts(self):
         self.assertListEqual(
             self.db.get_user_posts(self.user1),
-            self.posts_user1[: constants.USER_MAX_POSTS],
+            self.posts_user1[: config.USER_MAX_POSTS],
         )
         self.assertListEqual(
             self.db.get_user_posts(self.user2),
-            self.posts_user2[: constants.USER_MAX_POSTS],
+            self.posts_user2[: config.USER_MAX_POSTS],
         )
 
 

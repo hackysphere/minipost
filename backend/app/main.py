@@ -10,7 +10,7 @@ from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import constants, db, ratelimit
+from . import config, db, ratelimit
 
 DEVMODE = "dev" in sys.argv
 
@@ -63,7 +63,8 @@ else:
     )
 # this works because of how decorators work
 # this applies to ALL ROUTES, including docs and the frontend!!!
-app.middleware("http")(ratelimit.rate_limit_by_ip)
+if config.RATE_LIMIT != -1:
+    app.middleware("http")(ratelimit.rate_limit_by_ip)
 
 
 class NewPostBody(BaseModel):
@@ -92,17 +93,17 @@ def push_post(body: NewPostBody) -> db.Post:
         )
 
     if (
-        len(post_username) > constants.USERNAME_MAX_CHARS
-        or len(post_username) < constants.USERNAME_MIN_CHARS
+        len(post_username) > config.USERNAME_MAX_CHARS
+        or len(post_username) < config.USERNAME_MIN_CHARS
     ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Username must be between {constants.USERNAME_MIN_CHARS} and {constants.USERNAME_MAX_CHARS} characters",
+            detail=f"Username must be between {config.USERNAME_MIN_CHARS} and {config.USERNAME_MAX_CHARS} characters",
         )
-    if len(post_content) > constants.POST_MAX_CHARS:
+    if len(post_content) > config.POST_MAX_CHARS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Post cannot be more than {constants.POST_MAX_CHARS} characters",
+            detail=f"Post cannot be more than {config.POST_MAX_CHARS} characters",
         )
 
     return database.push_post(content=body.content, user=body.username)

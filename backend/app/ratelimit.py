@@ -2,7 +2,7 @@ import time
 from typing import TypedDict
 from fastapi import Request, status
 from fastapi.responses import PlainTextResponse
-from . import constants
+from . import config
 
 
 class IPRateData(TypedDict):
@@ -26,7 +26,7 @@ async def rate_limit_by_ip(request: Request, call_next):
     else:
         # could probably put this if statement into the one above and join with OR
         if time.time() >= (
-            ip_list[client_ip]["initial_timestamp"] + constants.RATE_LIMIT_WINDOW
+            ip_list[client_ip]["initial_timestamp"] + config.RATE_LIMIT_WINDOW
         ):
             ip_list[client_ip] = IPRateData(
                 initial_timestamp=time.time(), request_count=1
@@ -34,7 +34,7 @@ async def rate_limit_by_ip(request: Request, call_next):
         else:
             ip_list[client_ip]["request_count"] += 1
 
-            if ip_list[client_ip]["request_count"] > constants.RATE_LIMIT:
+            if ip_list[client_ip]["request_count"] > config.RATE_LIMIT:
                 return PlainTextResponse(
                     "Rate limit exceeded, please wait a bit",
                     status_code=status.HTTP_429_TOO_MANY_REQUESTS,

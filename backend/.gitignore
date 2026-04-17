@@ -208,3 +208,6 @@ __marimo__/
 
 # logs
 *.log.*
+
+# Server config
+config.toml
