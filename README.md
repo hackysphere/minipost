@@ -39,4 +39,6 @@ to regenerate types for typescript:
 
 ## building & running
 1. run `pnpm build` in the frontend folder
-1. run the app with `uv run fastapi run` in the backend folder
+1. run the app with `uv run -m app.main` in the backend folder
+    * using `uv run fastapi run` will assume that you are behind a proxy, add `--no-proxy-headers` to disable this
+      this is why running with `app.main` is recommended, as it follows the config file

@@ -7,3 +7,5 @@ USER_MAX_POSTS = 15
 # use -1 for RATE_LIMIT to disable
 RATE_LIMIT = 500  # requests per time window
 RATE_LIMIT_WINDOW = 60  # time window for requests
+
+BEHIND_PROXY = false

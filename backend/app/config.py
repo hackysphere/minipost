@@ -3,6 +3,7 @@ import tomllib
 from typing import TypedDict, cast
 
 
+# TODO: make this use default parameters if they are not defined
 class ConfigFileTypes(TypedDict):
     USERNAME_MIN_CHARS: int
     USERNAME_MAX_CHARS: int
@@ -11,6 +12,8 @@ class ConfigFileTypes(TypedDict):
 
     RATE_LIMIT: int
     RATE_LIMIT_WINDOW: int
+
+    BEHIND_PROXY: bool
 
 
 try:
@@ -35,5 +38,7 @@ try:
 
     RATE_LIMIT = config["RATE_LIMIT"]  # requests per time window
     RATE_LIMIT_WINDOW = config["RATE_LIMIT_WINDOW"]  # time window for requests
+
+    BEHIND_PROXY = config["BEHIND_PROXY"]
 except KeyError as err:
     sys.exit(f"Missing key: {err}")

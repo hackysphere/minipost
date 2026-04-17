@@ -160,10 +160,10 @@ else:
         )
 
 
-def run_uvicorn():
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+def main():
+    uvicorn.run(app, host="0.0.0.0", port=8000, proxy_headers=config.BEHIND_PROXY)
 
 
 if __name__ == "__main__":
     # this can be used for debugging
-    run_uvicorn()
+    main()
