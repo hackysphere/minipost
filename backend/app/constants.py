@@ -5,3 +5,7 @@ USERNAME_MIN_CHARS = 4
 USERNAME_MAX_CHARS = 24
 POST_MAX_CHARS = 300
 USER_MAX_POSTS = 15
+
+# all in seconds
+RATE_LIMIT = 500  # requests per time window
+RATE_LIMIT_WINDOW = 60  # time window for requests

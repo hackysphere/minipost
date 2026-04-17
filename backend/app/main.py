@@ -1,15 +1,16 @@
-from pydantic import BaseModel
-import uvicorn
-import uuid
-import sys
 import logging
 import logging.handlers
-from fastapi import FastAPI, status, HTTPException
-from fastapi.routing import APIRoute
+import sys
+import uuid
+
+import uvicorn
+from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
-from . import db
-from . import constants
+from pydantic import BaseModel
+
+from . import constants, db, ratelimit
 
 DEVMODE = "dev" in sys.argv
 
@@ -45,7 +46,7 @@ def generate_unique_api_id(route: APIRoute):
 if DEVMODE:
     app = FastAPI(generate_unique_id_function=generate_unique_api_id)
     app.add_middleware(
-        CORSMiddleware,  # ty:ignore[invalid-argument-type]
+        CORSMiddleware,  # ty:ignore[invalid-argument-type, unused-ignore-comment]
         allow_origins=[
             "http://localhost:5173",
         ],
@@ -60,6 +61,9 @@ else:
         redoc_url=None,
         openapi_url=None,
     )
+# this works because of how decorators work
+# this applies to ALL ROUTES, including docs and the frontend!!!
+app.middleware("http")(ratelimit.rate_limit_by_ip)
 
 
 class NewPostBody(BaseModel):
