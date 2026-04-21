@@ -1,3 +1,4 @@
+import os
 import logging
 import logging.handlers
 import sys
@@ -14,12 +15,16 @@ from . import config, db, ratelimit
 
 DEVMODE = "dev" in sys.argv
 
+if not os.path.exists(config.DATA_FOLDER):
+    print("data directory does not exist, creating...")
+    os.mkdir(config.DATA_FOLDER)
+
 # this only saves my logs, for builtin uvicorn loggers see: https://stackoverflow.com/a/77007723
 logger_formatter = logging.Formatter(
     "{asctime} {levelname} - {module}: {message}", style="{"
 )
 file_logger = logging.handlers.RotatingFileHandler(
-    "minipost.log",
+    f"{config.DATA_FOLDER}/minipost.log",
     maxBytes=5000000,  # 5MB
     backupCount=5,
 )

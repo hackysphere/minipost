@@ -3,9 +3,8 @@ app that posts to a temporary global timeline
 uses python for backend and svelte for frontend  
 
 ## deploying with docker
-there is no image made yet, so it must be manually built by running `docker build -t minipost .`  
-first create the `config.toml` file and a blank `minipost.db` file  
-the image can be run with `docker run --rm -v ./config.toml:/app/backend/config.toml:ro -v ./minipost.db:/app/backend/minipost.db -p 8000:8000 minipost`  
+there is no image made yet, so it must be manually built by running `docker build -t minipost .` or `docker compose build` for docker compose  
+the image can be run with `docker run --rm -v ./data:/app/backend/data -p 8000:8000 minipost`  
 run with docker compose with `docker compose up -d`
 
 TODO proxy config with docker  

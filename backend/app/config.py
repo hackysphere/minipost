@@ -14,6 +14,9 @@ class ConfigFileTypes(TypedDict):
 
     BEHIND_PROXY: bool
 
+    # this currently does nothing and is just for use in code for paths
+    DATA_FOLDER: str
+
 
 defaultconfig = {
     "USERNAME_MIN_CHARS": 4,
@@ -23,11 +26,12 @@ defaultconfig = {
     "RATE_LIMIT": 500,
     "RATE_LIMIT_WINDOW": 60,
     "BEHIND_PROXY": False,
+    "DATA_FOLDER": "./data",
 }
 
 try:
     # binary mode because that's how tomllib works
-    with open("config.toml", "rb") as file:
+    with open("./data/config.toml", "rb") as file:
         fileconfig = tomllib.load(file)
 except FileNotFoundError:
     print("No config file found, using defaults...")
@@ -46,3 +50,4 @@ USER_MAX_POSTS = config["USER_MAX_POSTS"]
 RATE_LIMIT = config["RATE_LIMIT"]  # requests per time window
 RATE_LIMIT_WINDOW = config["RATE_LIMIT_WINDOW"]  # time window for requests
 BEHIND_PROXY = config["BEHIND_PROXY"]
+DATA_FOLDER = config["DATA_FOLDER"]

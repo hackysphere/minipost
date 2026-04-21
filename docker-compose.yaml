@@ -8,7 +8,5 @@ services:
     ports:
       - 8000:8000
     volumes:
-      # FIXME: using these direct file paths makes some weird stuff happen
-      - ./config.toml:/app/backend/config.toml:ro
-      - ./minipost.db:/app/backend/minipost.db
+      - ./minipost:/app/backend/data
     restart: unless-stopped

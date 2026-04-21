@@ -43,7 +43,9 @@ def add_types_to_sql_post(sql_output: list):
 
 
 class Database:
-    def __init__(self, path: str | Literal[":memory:"] = "./minipost.db") -> None:
+    def __init__(
+        self, path: str | Literal[":memory:"] = f"{config.DATA_FOLDER}/minipost.db"
+    ) -> None:
         self.path = path
         init_database(path)
         _logger.info(f"initialized database at {path}")
