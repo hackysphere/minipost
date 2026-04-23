@@ -25,6 +25,14 @@ repos:
         types_or: [python, pyi, jupyter]
         additional_dependencies: [ty]
         args: [--project=backend, --python=backend/.venv]
+  - repo: local
+    hooks:
+      - id: test-db
+        name: small database test
+        entry: python backend/test-db.py
+        language: python
+        types_or: [python, pyi, jupyter]
+        pass_filenames: false
 
   # svelte
   - repo: https://github.com/biomejs/pre-commit

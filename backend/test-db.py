@@ -94,11 +94,11 @@ class TestReplyOps(unittest.TestCase):
 
     def test_get_reply(self):
         example_post_uuid = self.local_posts[0]["uuid"]
-        reply_uuid = self.db.push_post(
+        reply_uuid = self.db.push_reply(
             content=str(random.random()),
             user=str(uuid.uuid4()),
             reply_to=example_post_uuid,
-        )["uuid"]
+        )["reply"]["uuid"]
 
         dbpost = self.db.get_post(example_post_uuid)
         if not dbpost["replies"]:

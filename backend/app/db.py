@@ -11,13 +11,21 @@ from . import config
 _logger = logging.getLogger("socialapp")
 
 
-class Post(TypedDict):
+class PostBase(TypedDict):
     uuid: uuid.UUID
     posted_on: int
     content: str
     username: str
-    replies: list["Post"] | None  # only used for the root post
+
+
+class Post(PostBase):
+    replies: list[PostBase] | None  # only used for the root post
     # no option to use parent_id because that is not supported (at least for now)
+
+
+class ReplyReturn(TypedDict):
+    reply: PostBase
+    parent_id: uuid.UUID
 
 
 def init_database(path: str):
@@ -75,9 +83,7 @@ class Database:
 
         return posts_typed
 
-    def push_post(
-        self, content: str, user: str, reply_to: uuid.UUID | None = None
-    ) -> Post:
+    def push_post(self, content: str, user: str) -> Post:
         post = Post(
             uuid=uuid.uuid4(),
             posted_on=time.time_ns(),  # no python floating-point weirdness
@@ -88,36 +94,49 @@ class Database:
 
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = connection.cursor()
-            if reply_to:
-                try:
-                    self.get_post(reply_to)
-                except KeyError:
-                    raise KeyError(f"No post found to reply to with UUID {reply_to}")
-
-                cursor.execute(
-                    "INSERT INTO Replies (id, parent_id, posted_on, content, username) VALUES (?, ?, ?, ?, ?)",
-                    (
-                        str(post["uuid"]),
-                        str(reply_to),
-                        post["posted_on"],
-                        post["content"],
-                        post["username"],
-                    ),
-                )
-            else:
-                cursor.execute(
-                    "INSERT INTO Posts (id, posted_on, content, username) VALUES (?, ?, ?, ?)",
-                    (
-                        str(post["uuid"]),
-                        post["posted_on"],
-                        post["content"],
-                        post["username"],
-                    ),
-                )
+            cursor.execute(
+                "INSERT INTO Posts (id, posted_on, content, username) VALUES (?, ?, ?, ?)",
+                (
+                    str(post["uuid"]),
+                    post["posted_on"],
+                    post["content"],
+                    post["username"],
+                ),
+            )
             connection.commit()
 
         _logger.info(f"post added with uuid {post['uuid']}")
         return post
+
+    def push_reply(self, content: str, user: str, reply_to: uuid.UUID) -> ReplyReturn:
+        reply = PostBase(
+            uuid=uuid.uuid4(),
+            posted_on=time.time_ns(),  # no python floating-point weirdness
+            content=content,
+            username=user,
+        )
+
+        try:
+            self.get_post(reply_to)
+        except KeyError:
+            raise KeyError(f"No post found to reply to with UUID {reply_to}")
+
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
+            cursor = connection.cursor()
+            cursor.execute(
+                "INSERT INTO Replies (id, parent_id, posted_on, content, username) VALUES (?, ?, ?, ?, ?)",
+                (
+                    str(reply["uuid"]),
+                    str(reply_to),
+                    reply["posted_on"],
+                    reply["content"],
+                    reply["username"],
+                ),
+            )
+            connection.commit()
+
+        _logger.info(f"reply added to {reply_to} with uuid {reply['uuid']}")
+        return ReplyReturn(reply=reply, parent_id=reply_to)
 
     def get_post(self, post_uuid: uuid.UUID) -> Post:
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
