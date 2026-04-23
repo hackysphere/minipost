@@ -79,6 +79,10 @@ class NewPostBody(BaseModel):
 
 @app.get("/api/posts")
 def get_latest_posts(count: int = 15) -> list[db.Post]:
+    if count > config.MAX_LATEST_POSTS:
+        count = config.MAX_LATEST_POSTS
+    if count < 1:
+        count = 1
     return database.pull_latest_posts(count)
 
 
@@ -111,7 +115,12 @@ def push_post(body: NewPostBody) -> db.Post:
             detail=f"Post cannot be more than {config.POST_MAX_CHARS} characters",
         )
 
-    return database.push_post(content=body.content, user=body.username)
+    returnval = database.push_post(content=body.content, user=body.username)
+    if len(userposts := database.get_user_posts(post_username)) > config.USER_MAX_POSTS:
+        for post in userposts[config.USER_MAX_POSTS :]:
+            database.delete_post(post["uuid"])
+
+    return returnval
 
 
 @app.get("/api/posts/{post_uuid}")

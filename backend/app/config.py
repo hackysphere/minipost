@@ -11,6 +11,7 @@ class ConfigFileTypes(TypedDict):
 
     RATE_LIMIT: int
     RATE_LIMIT_WINDOW: int
+    MAX_LATEST_POSTS: int
 
     BEHIND_PROXY: bool
 
@@ -25,6 +26,7 @@ defaultconfig = {
     "USER_MAX_POSTS": 15,
     "RATE_LIMIT": 500,
     "RATE_LIMIT_WINDOW": 60,
+    "MAX_LATEST_POSTS": 30,
     "BEHIND_PROXY": False,
     "DATA_FOLDER": "./data",
 }
@@ -49,5 +51,6 @@ POST_MAX_CHARS = config["POST_MAX_CHARS"]
 USER_MAX_POSTS = config["USER_MAX_POSTS"]
 RATE_LIMIT = config["RATE_LIMIT"]  # requests per time window
 RATE_LIMIT_WINDOW = config["RATE_LIMIT_WINDOW"]  # time window for requests
+MAX_LATEST_POSTS = config["MAX_LATEST_POSTS"]
 BEHIND_PROXY = config["BEHIND_PROXY"]
 DATA_FOLDER = config["DATA_FOLDER"]

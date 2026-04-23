@@ -50,17 +50,11 @@ class Database:
         init_database(path)
         _logger.info(f"initialized database at {path}")
 
-    def pull_latest_posts(self, count=15) -> list[Post]:
-        max_return = 30
-        if count > max_return:
-            count = max_return
-        if count < 1:
-            count = 1
-
+    def pull_latest_posts(self, limit=-1) -> list[Post]:
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = connection.cursor()
             cursor.execute(
-                "SELECT * FROM Posts ORDER BY posted_on DESC LIMIT ?", (count,)
+                "SELECT * FROM Posts ORDER BY posted_on DESC LIMIT ?", (limit,)
             )
             posts = cursor.fetchall()
 
@@ -85,23 +79,6 @@ class Database:
                     post["posted_on"],
                     post["content"],
                     post["username"],
-                ),
-            )
-            # this is here because a user's posts only get added to in this function (until replying to posts becomes a thing)
-            cursor.execute(
-                """DELETE FROM Posts
-                WHERE username = ?
-                AND id NOT IN (
-                    SELECT id FROM Posts
-                    WHERE username = ?
-                    ORDER BY posted_on DESC
-                    LIMIT ?
-                )
-                """,
-                (
-                    post["username"],
-                    post["username"],
-                    config.USER_MAX_POSTS,
                 ),
             )
             connection.commit()

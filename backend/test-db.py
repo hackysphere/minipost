@@ -3,7 +3,7 @@ import tempfile
 import unittest
 import uuid
 
-from app import db, config
+from app import db
 
 
 class TestPostOps(unittest.TestCase):
@@ -23,7 +23,7 @@ class TestPostOps(unittest.TestCase):
         self.db_file.close()
 
     def test_pull_latest_posts(self):
-        self.assertListEqual(self.local_posts[:15], self.db.pull_latest_posts())
+        self.assertListEqual(self.local_posts, self.db.pull_latest_posts())
 
     def test_pull_few_posts(self):
         pull_amount = 2
@@ -64,11 +64,11 @@ class TestUsernameOps(unittest.TestCase):
     def test_get_user_posts(self):
         self.assertListEqual(
             self.db.get_user_posts(self.user1),
-            self.posts_user1[: config.USER_MAX_POSTS],
+            self.posts_user1,
         )
         self.assertListEqual(
             self.db.get_user_posts(self.user2),
-            self.posts_user2[: config.USER_MAX_POSTS],
+            self.posts_user2,
         )
 
 
