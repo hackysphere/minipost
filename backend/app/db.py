@@ -63,6 +63,15 @@ def add_types_to_sql_post(sql_output: list) -> Post:
     )
 
 
+def add_types_to_sql_reply(sql_output: list) -> PostBase:
+    return PostBase(
+        uuid=uuid.UUID(sql_output[0]),
+        posted_on=sql_output[2],
+        content=sql_output[3],
+        username=sql_output[4],
+    )
+
+
 class Database:
     def __init__(
         self, path: str | Literal[":memory:"] = f"{config.DATA_FOLDER}/minipost.db"
@@ -156,7 +165,7 @@ class Database:
         if replies:
             typed_post["replies"] = []
             for reply in replies:
-                typed_post["replies"].append(add_types_to_sql_post(reply))
+                typed_post["replies"].append(add_types_to_sql_reply(reply))
         return typed_post
 
     def delete_post(self, post_uuid: uuid.UUID):

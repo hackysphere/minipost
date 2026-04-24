@@ -1,16 +1,22 @@
 <script lang="ts">
-	import type { Post } from "./openapi/types.gen";
+	import type { Post, PostBase } from "./openapi/types.gen";
 
-	let { content }: { content: Post } = $props();
+	let {
+		content,
+		reply = false,
+	}: { content: Post | PostBase; reply?: boolean } = $props();
 	let posted_on_utc = $derived(new Date(content.posted_on / 1000000)); // need to convert from nanoseconds to milliseconds
 </script>
 
+<!-- TODO: make this whole thing clickable -->
 <div class="post-card">
 	<a class="username" href={`/user/${content.username}`}>{content.username}</a>
 	<p>{content.content}</p>
 	<div class="metadata">
 		<span>{posted_on_utc.toLocaleString()}</span>
-		<a class="uuid" href={`/post/${content.uuid}`}>{content.uuid}</a>
+		{#if !reply}
+			<a class="uuid" href={`/post/${content.uuid}`}>{content.uuid}</a>
+		{/if}
 	</div>
 </div>
 
