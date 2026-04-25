@@ -42,7 +42,7 @@
 </script>
 
 <h1>post <span class="uuid">{data.post.uuid}</span></h1>
-<PostCard content={data.post} />
+<PostCard content={data.post} basecontent={true} />
 {#if data.post.replies}
 	<hr>
 	{#each data.post.replies as reply (reply.uuid)}

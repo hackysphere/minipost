@@ -184,6 +184,20 @@ class Database:
             cursor.execute("DELETE FROM Replies WHERE parent_id = ?", (str(post_uuid),))
             connection.commit()
 
+    def delete_reply(self, reply_uuid: uuid.UUID):
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM Replies WHERE id = ?", (str(reply_uuid),))
+            reply = cursor.fetchone()
+
+        if not reply:
+            raise KeyError(f"Reply with UUID {reply_uuid} not found")
+
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
+            cursor = connection.cursor()
+            cursor.execute("DELETE FROM Replies WHERE id = ?", (str(reply_uuid),))
+            connection.commit()
+
     def get_user_posts(self, username: str) -> list[Post]:
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = connection.cursor()

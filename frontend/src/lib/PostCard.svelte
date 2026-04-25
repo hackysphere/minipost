@@ -1,11 +1,33 @@
 <script lang="ts">
+	import { goto, invalidateAll } from "$app/navigation";
 	import type { Post, PostBase } from "./openapi/types.gen";
 
 	let {
 		content,
 		reply = false,
-	}: { content: Post | PostBase; reply?: boolean } = $props();
+		basecontent = false,
+	}: {
+		content: Post | PostBase;
+		reply?: boolean;
+		basecontent?: boolean;
+	} = $props();
 	let posted_on_utc = $derived(new Date(content.posted_on / 1000000)); // need to convert from nanoseconds to milliseconds
+
+	function deleteContent() {
+		if (reply) {
+			fetch(`/api/replies/${content.uuid}`, { method: "DELETE" }).then(
+				invalidateAll,
+			);
+		} else {
+			fetch(`/api/posts/${content.uuid}`, { method: "DELETE" }).then(() => {
+				if (basecontent) {
+					goto("/");
+				} else {
+					invalidateAll();
+				}
+			});
+		}
+	}
 </script>
 
 <!-- TODO: make this whole thing clickable -->
@@ -17,6 +39,9 @@
 		{#if !reply}
 			<a class="uuid" href={`/post/${content.uuid}`}>{content.uuid}</a>
 		{/if}
+		<button class="delete-button" type="button" onclick={deleteContent}>
+			delete
+		</button>
 	</div>
 </div>
 
@@ -52,5 +77,18 @@
 	}
 	.uuid {
 		word-break: break-all;
+	}
+
+	.delete-button {
+		color: var(--ctp-mocha-red);
+		margin-left: auto;
+		border: none;
+		background-color: var(--ctp-mocha-surface1);
+		border-radius: 5px;
+		transition-duration: 200ms;
+	}
+	.delete-button:hover {
+		color: var(--ctp-mocha-crust);
+		background-color: var(--ctp-mocha-red);
 	}
 </style>

@@ -159,6 +159,14 @@ def push_reply(post_uuid: uuid.UUID, body: NewPostBody) -> db.ReplyReturn:
     )
 
 
+@app.delete("/api/replies/{reply_uuid}")
+def delete_reply_by_uuid(reply_uuid: uuid.UUID):
+    try:
+        database.delete_reply(reply_uuid)
+    except KeyError as err:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
+
+
 @app.get("/api/users/{username}/posts")
 def get_posts_from_user(username: str) -> list[db.Post]:
     try:

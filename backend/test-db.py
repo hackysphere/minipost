@@ -37,6 +37,12 @@ class TestPostOps(unittest.TestCase):
         uuid = example_post["uuid"]
         self.assertDictEqual(example_post, self.db.get_post(uuid))
 
+    def test_delete_post_by_uuid(self):
+        example_post = random.choice(self.local_posts)
+        uuid = example_post["uuid"]
+        self.db.delete_post(uuid)
+        self.assertRaises(KeyError, lambda: self.db.get_post(uuid))
+
 
 class TestUsernameOps(unittest.TestCase):
     def setUp(self):
@@ -105,6 +111,17 @@ class TestReplyOps(unittest.TestCase):
             self.fail("No replies found in post")
 
         self.assertEqual(reply_uuid, dbpost["replies"][0]["uuid"])
+
+    def test_delete_reply(self):
+        example_post_uuid = self.local_posts[0]["uuid"]
+        reply_uuid = self.db.push_reply(
+            content=str(random.random()),
+            user=str(uuid.uuid4()),
+            reply_to=example_post_uuid,
+        )["reply"]["uuid"]
+
+        self.db.delete_reply(reply_uuid)
+        self.assertIsNone(self.db.get_post(example_post_uuid)["replies"])
 
 
 if __name__ == "__main__":
