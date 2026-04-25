@@ -42,10 +42,43 @@ database = db.Database()
 logger.info("welcome to minipost!")
 
 
+class NewPostBody(BaseModel):
+    content: str
+    username: str
+
+
 def generate_unique_api_id(route: APIRoute):
     # in the case that endpoint duplicates are created, add tags to all routes and uncomment the below line
     # return f"{route.tags[0]}-{route.name}"
     return f"{route.name}"
+
+
+def validate_post_create_request(content: NewPostBody):
+    post_content = content.content.strip()
+    post_username = content.username.strip()
+
+    if len(post_content) == 0:
+        raise ValueError("Empty post content")
+    if len(post_username) == 0:
+        raise ValueError("No username provided")
+
+    if (
+        len(post_username) > config.USERNAME_MAX_CHARS
+        or len(post_username) < config.USERNAME_MIN_CHARS
+    ):
+        raise ValueError(
+            f"Username must be between {config.USERNAME_MIN_CHARS} and {config.USERNAME_MAX_CHARS} characters"
+        )
+    if len(post_content) > config.POST_MAX_CHARS:
+        raise ValueError(f"Post cannot be more than {config.POST_MAX_CHARS} characters")
+
+    return {"content": post_content, "username": post_username}
+
+
+def clean_up_posts(username: str):
+    if len(userposts := database.get_user_posts(username)) > config.USER_MAX_POSTS:
+        for post in userposts[config.USER_MAX_POSTS :]:
+            database.delete_post(post["uuid"])
 
 
 if DEVMODE:
@@ -66,15 +99,9 @@ else:
         redoc_url=None,
         openapi_url=None,
     )
-# this works because of how decorators work
 # this applies to ALL ROUTES, including docs and the frontend!!!
 if config.RATE_LIMIT != -1:
     app.middleware("http")(ratelimit.rate_limit_by_ip)
-
-
-class NewPostBody(BaseModel):
-    content: str
-    username: str
 
 
 @app.get("/api/posts")
@@ -88,38 +115,16 @@ def get_latest_posts(count: int = 15) -> list[db.Post]:
 
 @app.post("/api/posts", status_code=status.HTTP_201_CREATED)
 def push_post(body: NewPostBody) -> db.Post:
-    post_content = body.content.strip()
-    post_username = body.username.strip()
+    try:
+        result = validate_post_create_request(body)
+    except ValueError as err:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=err.args[0])
 
-    # null checks
-    if len(post_content) == 0:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Empty post content"
-        )
-    if len(post_username) == 0:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="No username provided"
-        )
+    post_content = result["content"]
+    post_username = result["username"]
 
-    if (
-        len(post_username) > config.USERNAME_MAX_CHARS
-        or len(post_username) < config.USERNAME_MIN_CHARS
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Username must be between {config.USERNAME_MIN_CHARS} and {config.USERNAME_MAX_CHARS} characters",
-        )
-    if len(post_content) > config.POST_MAX_CHARS:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Post cannot be more than {config.POST_MAX_CHARS} characters",
-        )
-
-    returnval = database.push_post(content=body.content, user=body.username)
-    if len(userposts := database.get_user_posts(post_username)) > config.USER_MAX_POSTS:
-        for post in userposts[config.USER_MAX_POSTS :]:
-            database.delete_post(post["uuid"])
-
+    returnval = database.push_post(content=post_content, user=post_username)
+    clean_up_posts(post_username)
     return returnval
 
 
@@ -131,13 +136,27 @@ def get_post_by_uuid(post_uuid: uuid.UUID) -> db.Post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
 
 
-# FIXME: this doesn't have auth checks right now because auth is not implemented
 @app.delete("/api/posts/{post_uuid}")
 def delete_post_by_uuid(post_uuid: uuid.UUID):
     try:
         database.delete_post(post_uuid)
     except KeyError as err:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
+
+
+@app.post("/api/posts/{post_uuid}/reply", status_code=status.HTTP_201_CREATED)
+def push_reply(post_uuid: uuid.UUID, body: NewPostBody) -> db.ReplyReturn:
+    try:
+        result = validate_post_create_request(body)
+    except ValueError as err:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=err.args[0])
+
+    post_content = result["content"]
+    post_username = result["username"]
+
+    return database.push_reply(
+        content=post_content, user=post_username, reply_to=post_uuid
+    )
 
 
 @app.get("/api/users/{username}/posts")
@@ -149,7 +168,7 @@ def get_posts_from_user(username: str) -> list[db.Post]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
 
 
-# below are the dynamic routes (for the frontend and special api 404s)
+# below are the dynamic routes (for the frontend and api 404s)
 # they must be placed last so that they don't override previous routes
 
 

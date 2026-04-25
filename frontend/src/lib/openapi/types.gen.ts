@@ -48,6 +48,43 @@ export type Post = {
 	 * Username
 	 */
 	username: string;
+	/**
+	 * Replies
+	 */
+	replies: Array<PostBase> | null;
+};
+
+/**
+ * PostBase
+ */
+export type PostBase = {
+	/**
+	 * Uuid
+	 */
+	uuid: string;
+	/**
+	 * Posted On
+	 */
+	posted_on: number;
+	/**
+	 * Content
+	 */
+	content: string;
+	/**
+	 * Username
+	 */
+	username: string;
+};
+
+/**
+ * ReplyReturn
+ */
+export type ReplyReturn = {
+	reply: PostBase;
+	/**
+	 * Parent Id
+	 */
+	parent_id: string;
 };
 
 /**
@@ -137,6 +174,35 @@ export type PushPostResponses = {
 
 export type PushPostResponse = PushPostResponses[keyof PushPostResponses];
 
+export type DeletePostByUuidData = {
+	body?: never;
+	path: {
+		/**
+		 * Post Uuid
+		 */
+		post_uuid: string;
+	};
+	query?: never;
+	url: "/api/posts/{post_uuid}";
+};
+
+export type DeletePostByUuidErrors = {
+	/**
+	 * Validation Error
+	 */
+	422: HttpValidationError;
+};
+
+export type DeletePostByUuidError =
+	DeletePostByUuidErrors[keyof DeletePostByUuidErrors];
+
+export type DeletePostByUuidResponses = {
+	/**
+	 * Successful Response
+	 */
+	200: unknown;
+};
+
 export type GetPostByUuidData = {
 	body?: never;
 	path: {
@@ -167,6 +233,36 @@ export type GetPostByUuidResponses = {
 
 export type GetPostByUuidResponse =
 	GetPostByUuidResponses[keyof GetPostByUuidResponses];
+
+export type PushReplyData = {
+	body: NewPostBody;
+	path: {
+		/**
+		 * Post Uuid
+		 */
+		post_uuid: string;
+	};
+	query?: never;
+	url: "/api/posts/{post_uuid}/reply";
+};
+
+export type PushReplyErrors = {
+	/**
+	 * Validation Error
+	 */
+	422: HttpValidationError;
+};
+
+export type PushReplyError = PushReplyErrors[keyof PushReplyErrors];
+
+export type PushReplyResponses = {
+	/**
+	 * Successful Response
+	 */
+	201: ReplyReturn;
+};
+
+export type PushReplyResponse = PushReplyResponses[keyof PushReplyResponses];
 
 export type GetPostsFromUserData = {
 	body?: never;

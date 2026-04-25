@@ -72,5 +72,40 @@ class TestUsernameOps(unittest.TestCase):
         )
 
 
+class TestReplyOps(unittest.TestCase):
+    def setUp(self):
+        self.db_file = tempfile.NamedTemporaryFile()
+        self.db = db.Database(self.db_file.name)
+        self.local_posts: list[db.Post] = []
+
+        for _ in range(2):
+            self.local_posts.append(
+                self.db.push_post(content=str(random.random()), user=str(uuid.uuid4()))
+            )
+
+        self.local_posts = self.local_posts[::-1]
+
+    def tearDown(self):
+        self.db_file.close()
+
+    def test_get_empty_reply_param(self):
+        example_post_uuid = self.local_posts[0]["uuid"]
+        self.assertIsNone(self.db.get_post(example_post_uuid)["replies"])
+
+    def test_get_reply(self):
+        example_post_uuid = self.local_posts[0]["uuid"]
+        reply_uuid = self.db.push_reply(
+            content=str(random.random()),
+            user=str(uuid.uuid4()),
+            reply_to=example_post_uuid,
+        )["reply"]["uuid"]
+
+        dbpost = self.db.get_post(example_post_uuid)
+        if not dbpost["replies"]:
+            self.fail("No replies found in post")
+
+        self.assertEqual(reply_uuid, dbpost["replies"][0]["uuid"])
+
+
 if __name__ == "__main__":
     unittest.main()

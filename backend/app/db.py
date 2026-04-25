@@ -11,11 +11,21 @@ from . import config
 _logger = logging.getLogger("socialapp")
 
 
-class Post(TypedDict):
+class PostBase(TypedDict):
     uuid: uuid.UUID
     posted_on: int
     content: str
     username: str
+
+
+class Post(PostBase):
+    replies: list[PostBase] | None  # only used for the root post
+    # no option to use parent_id because that is not supported (at least for now)
+
+
+class ReplyReturn(TypedDict):
+    reply: PostBase
+    parent_id: uuid.UUID
 
 
 def init_database(path: str):
@@ -30,15 +40,35 @@ def init_database(path: str):
                         PRIMARY KEY("id")
                  )
                   """)
+        cursor.execute("""
+                  CREATE TABLE IF NOT EXISTS Replies (
+                        id TEXT NOT NULL UNIQUE,
+                        parent_id TEXT NOT NULL,
+                        posted_on INTEGER NOT NULL,
+                        content TEXT NOT NULL,
+                        username TEXT NOT NULL,
+                        PRIMARY KEY("id")
+                 )
+                  """)
         connection.commit()
 
 
-def add_types_to_sql_post(sql_output: list):
+def add_types_to_sql_post(sql_output: list) -> Post:
     return Post(
         uuid=uuid.UUID(sql_output[0]),
         posted_on=sql_output[1],
         content=sql_output[2],
         username=sql_output[3],
+        replies=None,
+    )
+
+
+def add_types_to_sql_reply(sql_output: list) -> PostBase:
+    return PostBase(
+        uuid=uuid.UUID(sql_output[0]),
+        posted_on=sql_output[2],
+        content=sql_output[3],
+        username=sql_output[4],
     )
 
 
@@ -68,6 +98,7 @@ class Database:
             posted_on=time.time_ns(),  # no python floating-point weirdness
             content=content,
             username=user,
+            replies=None,
         )
 
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
@@ -86,15 +117,56 @@ class Database:
         _logger.info(f"post added with uuid {post['uuid']}")
         return post
 
+    def push_reply(self, content: str, user: str, reply_to: uuid.UUID) -> ReplyReturn:
+        reply = PostBase(
+            uuid=uuid.uuid4(),
+            posted_on=time.time_ns(),  # no python floating-point weirdness
+            content=content,
+            username=user,
+        )
+
+        try:
+            self.get_post(reply_to)
+        except KeyError:
+            raise KeyError(f"No post found to reply to with UUID {reply_to}")
+
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
+            cursor = connection.cursor()
+            cursor.execute(
+                "INSERT INTO Replies (id, parent_id, posted_on, content, username) VALUES (?, ?, ?, ?, ?)",
+                (
+                    str(reply["uuid"]),
+                    str(reply_to),
+                    reply["posted_on"],
+                    reply["content"],
+                    reply["username"],
+                ),
+            )
+            connection.commit()
+
+        _logger.info(f"reply added to {reply_to} with uuid {reply['uuid']}")
+        return ReplyReturn(reply=reply, parent_id=reply_to)
+
     def get_post(self, post_uuid: uuid.UUID) -> Post:
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = connection.cursor()
             cursor.execute("SELECT * FROM Posts WHERE id = ?", (str(post_uuid),))
             post = cursor.fetchone()
 
-        if post:
-            return add_types_to_sql_post(post)
-        raise KeyError(f"Post with UUID {post_uuid} not found")
+            if not post:
+                raise KeyError(f"Post with UUID {post_uuid} not found")
+
+            cursor.execute(
+                "SELECT * FROM Replies WHERE parent_id = ?", (str(post_uuid),)
+            )
+            replies = cursor.fetchall()
+
+        typed_post = add_types_to_sql_post(post)
+        if replies:
+            typed_post["replies"] = []
+            for reply in replies:
+                typed_post["replies"].append(add_types_to_sql_reply(reply))
+        return typed_post
 
     def delete_post(self, post_uuid: uuid.UUID):
         # this is probably not efficient to check if a post exists first
@@ -109,6 +181,7 @@ class Database:
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = connection.cursor()
             cursor.execute("DELETE FROM Posts WHERE id = ?", (str(post_uuid),))
+            cursor.execute("DELETE FROM Replies WHERE parent_id = ?", (str(post_uuid),))
             connection.commit()
 
     def get_user_posts(self, username: str) -> list[Post]:
