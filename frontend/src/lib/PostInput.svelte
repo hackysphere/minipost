@@ -1,11 +1,11 @@
 <script lang="ts">
-	type CallbackFunction = (postContent: string, postUsername: string) => void;
+	type CallbackFunction = (postContent: string, postUserId: string) => void;
 	let {
 		callback,
 		error: errorContent,
 	}: { callback: CallbackFunction; error?: string } = $props();
 
-	let postUsername: string = $state("");
+	let postUserId: string = $state("");
 	let postContent: string = $state("");
 
 	function shortcutHandler(event: KeyboardEvent) {
@@ -15,15 +15,15 @@
 	}
 
 	function callCallback() {
-		if (postContent.trim() !== "" && postUsername.trim() !== "") {
-			callback(postContent, postUsername);
+		if (postContent.trim() !== "" && postUserId.trim() !== "") {
+			callback(postContent, postUserId);
 		}
 	}
 </script>
 
 <input
-	placeholder="username"
-	bind:value={postUsername}
+	placeholder="user id"
+	bind:value={postUserId}
 	onkeydown={shortcutHandler}
 >
 <textarea

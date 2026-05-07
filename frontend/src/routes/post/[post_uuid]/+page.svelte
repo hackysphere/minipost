@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { invalidateAll } from "$app/navigation";
+	import type { NewPostBodyOld } from "$lib/openapi/types.gen";
 	import PostCard from "$lib/PostCard.svelte";
 	import PostInput from "$lib/PostInput.svelte";
 	import type { PageProps } from "./$types";
@@ -7,14 +8,15 @@
 	let { data }: PageProps = $props();
 
 	let sendPostError: string | undefined = $state();
-	function sendPost(content: string, username: string) {
+	function sendPost(content: string, userId: string) {
+		let body: NewPostBodyOld = {
+			content: content,
+			user_id: userId,
+		};
 		fetch(`/api/posts/${data.post.uuid}/reply`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				content: content,
-				username: username,
-			}),
+			body: JSON.stringify(body),
 		})
 			.then((res) => {
 				switch (res.status) {

@@ -5,7 +5,8 @@
 	let { params, data }: PageProps = $props();
 </script>
 
-<h1>user {params.username}</h1>
+<!-- FIXME: this should show the username instead of the user id -->
+<h1>user {params.user_id}</h1>
 {#each data.posts as post (post.uuid)}
 	<PostCard content={post} />
 {/each}

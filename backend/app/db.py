@@ -15,7 +15,7 @@ class PostBase(TypedDict):
     uuid: uuid.UUID
     posted_on: int
     content: str
-    username: str
+    user_id: uuid.UUID
 
 
 class Post(PostBase):
@@ -28,16 +28,29 @@ class ReplyReturn(TypedDict):
     parent_id: uuid.UUID
 
 
+class User(TypedDict):
+    user_id: uuid.UUID
+    creation_ts: int
+    username: str
+    token_version: int
+
+
 def init_database(path: str):
     with contextlib.closing(sqlite3.connect(path)) as connection:
         cursor = connection.cursor()
+        cursor.execute(
+            "PRAGMA foreign_keys = true;"
+        )  # this needs to be manually set in each connection editing the database because sqlite doesn't save it
         cursor.execute("""
                   CREATE TABLE IF NOT EXISTS Posts (
                         id TEXT NOT NULL UNIQUE,
                         posted_on INTEGER NOT NULL,
                         content TEXT NOT NULL,
-                        username TEXT NOT NULL,
-                        PRIMARY KEY("id")
+                        user_id TEXT NOT NULL,
+                        PRIMARY KEY("id"),
+                        FOREIGN KEY(user_id)
+                            REFERENCES Users (user_id)
+                            ON DELETE CASCADE
                  )
                   """)
         cursor.execute("""
@@ -46,8 +59,23 @@ def init_database(path: str):
                         parent_id TEXT NOT NULL,
                         posted_on INTEGER NOT NULL,
                         content TEXT NOT NULL,
-                        username TEXT NOT NULL,
+                        user_id TEXT NOT NULL,
                         PRIMARY KEY("id")
+                        FOREIGN KEY(parent_id)
+                            REFERENCES Posts (id)
+                            ON DELETE CASCADE,
+                        FOREIGN KEY(user_id)
+                            REFERENCES Users (user_id)
+                            ON DELETE CASCADE
+                 )
+                  """)
+        cursor.execute("""
+                  CREATE TABLE IF NOT EXISTS Users (
+                        user_id TEXT NOT NULL UNIQUE,
+                        creation_ts TEXT NOT NULL,
+                        username TEXT NOT NULL UNIQUE,
+                        token_version INTEGER NOT NULL,
+                        PRIMARY KEY("user_id")
                  )
                   """)
         connection.commit()
@@ -58,7 +86,7 @@ def add_types_to_sql_post(sql_output: list) -> Post:
         uuid=uuid.UUID(sql_output[0]),
         posted_on=sql_output[1],
         content=sql_output[2],
-        username=sql_output[3],
+        user_id=uuid.UUID(sql_output[3]),
         replies=None,
     )
 
@@ -68,7 +96,7 @@ def add_types_to_sql_reply(sql_output: list) -> PostBase:
         uuid=uuid.UUID(sql_output[0]),
         posted_on=sql_output[2],
         content=sql_output[3],
-        username=sql_output[4],
+        user_id=uuid.UUID(sql_output[4]),
     )
 
 
@@ -92,24 +120,25 @@ class Database:
 
         return posts_typed
 
-    def push_post(self, content: str, user: str) -> Post:
+    def push_post(self, content: str, user_id: uuid.UUID) -> Post:
         post = Post(
             uuid=uuid.uuid4(),
             posted_on=time.time_ns(),  # no python floating-point weirdness
             content=content,
-            username=user,
+            user_id=user_id,
             replies=None,
         )
 
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = connection.cursor()
+            cursor.execute("PRAGMA foreign_keys = true;")
             cursor.execute(
-                "INSERT INTO Posts (id, posted_on, content, username) VALUES (?, ?, ?, ?)",
+                "INSERT INTO Posts (id, posted_on, content, user_id) VALUES (?, ?, ?, ?)",
                 (
                     str(post["uuid"]),
                     post["posted_on"],
                     post["content"],
-                    post["username"],
+                    str(post["user_id"]),
                 ),
             )
             connection.commit()
@@ -117,12 +146,14 @@ class Database:
         _logger.info(f"post added with uuid {post['uuid']}")
         return post
 
-    def push_reply(self, content: str, user: str, reply_to: uuid.UUID) -> ReplyReturn:
+    def push_reply(
+        self, content: str, user_id: uuid.UUID, reply_to: uuid.UUID
+    ) -> ReplyReturn:
         reply = PostBase(
             uuid=uuid.uuid4(),
             posted_on=time.time_ns(),  # no python floating-point weirdness
             content=content,
-            username=user,
+            user_id=user_id,
         )
 
         try:
@@ -132,14 +163,15 @@ class Database:
 
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = connection.cursor()
+            cursor.execute("PRAGMA foreign_keys = true;")
             cursor.execute(
-                "INSERT INTO Replies (id, parent_id, posted_on, content, username) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO Replies (id, parent_id, posted_on, content, user_id) VALUES (?, ?, ?, ?, ?)",
                 (
                     str(reply["uuid"]),
                     str(reply_to),
                     reply["posted_on"],
                     reply["content"],
-                    reply["username"],
+                    str(reply["user_id"]),
                 ),
             )
             connection.commit()
@@ -180,8 +212,8 @@ class Database:
 
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = connection.cursor()
+            cursor.execute("PRAGMA foreign_keys = true;")
             cursor.execute("DELETE FROM Posts WHERE id = ?", (str(post_uuid),))
-            cursor.execute("DELETE FROM Replies WHERE parent_id = ?", (str(post_uuid),))
             connection.commit()
 
     def delete_reply(self, reply_uuid: uuid.UUID):
@@ -195,21 +227,47 @@ class Database:
 
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = connection.cursor()
+            cursor.execute("PRAGMA foreign_keys = true;")
             cursor.execute("DELETE FROM Replies WHERE id = ?", (str(reply_uuid),))
             connection.commit()
 
-    def get_user_posts(self, username: str) -> list[Post]:
+    def get_posts_by_userid(self, user_id: uuid.UUID) -> list[Post]:
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = connection.cursor()
             cursor.execute(
-                "SELECT * FROM Posts WHERE username = ? ORDER BY posted_on DESC",
-                (username,),
+                "SELECT id FROM Posts WHERE user_id = ? ORDER BY posted_on DESC",
+                (str(user_id),),
             )
-            posts = cursor.fetchall()
+            post_ids = cursor.fetchall()
 
-        if not posts:
-            raise KeyError(f"Posts from user with username {username} not found")
+        if not post_ids:
+            raise KeyError(f"Posts from user with userid {user_id} not found")
 
-        posts_typed = [add_types_to_sql_post(post) for post in posts]
-
+        posts_typed: list[Post] = []
+        for id in post_ids:
+            posts_typed.append(self.get_post(id[0]))
         return posts_typed
+
+    def create_user(self, username: str) -> User:
+        user = User(
+            user_id=uuid.uuid4(),
+            creation_ts=time.time_ns(),
+            username=username,
+            token_version=1,
+        )
+
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
+            cursor = connection.cursor()
+            cursor.execute("PRAGMA foreign_keys = true")
+            cursor.execute(
+                "INSERT INTO Users (user_id, creation_ts, username, token_version) VALUES (?, ?, ?, ?)",
+                (
+                    str(user["user_id"]),
+                    user["creation_ts"],
+                    user["username"],
+                    user["token_version"],
+                ),
+            )
+            connection.commit()
+
+        return user

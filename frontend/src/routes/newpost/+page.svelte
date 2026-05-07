@@ -1,17 +1,20 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
+	import type { NewPostBodyOld } from "$lib/openapi/types.gen";
 	import PostInput from "$lib/PostInput.svelte";
 
 	let errorValue: string | undefined = $state();
 
 	function sendPost(postContent: string, postUsername: string) {
+		let body: NewPostBodyOld = {
+			content: postContent,
+			user_id: postUsername,
+		};
+
 		fetch("/api/posts", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				content: postContent,
-				username: postUsername,
-			}),
+			body: JSON.stringify(body),
 		})
 			.then((res) => {
 				switch (res.status) {

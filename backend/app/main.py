@@ -42,9 +42,9 @@ database = db.Database()
 logger.info("welcome to minipost!")
 
 
-class NewPostBody(BaseModel):
+class NewPostBodyOLD(BaseModel):
     content: str
-    username: str
+    user_id: uuid.UUID
 
 
 def generate_unique_api_id(route: APIRoute):
@@ -53,30 +53,20 @@ def generate_unique_api_id(route: APIRoute):
     return f"{route.name}"
 
 
-def validate_post_create_request(content: NewPostBody):
-    post_content = content.content.strip()
-    post_username = content.username.strip()
+def validate_post_content(content: str):
+    post_content = content.strip()
 
     if len(post_content) == 0:
         raise ValueError("Empty post content")
-    if len(post_username) == 0:
-        raise ValueError("No username provided")
 
-    if (
-        len(post_username) > config.USERNAME_MAX_CHARS
-        or len(post_username) < config.USERNAME_MIN_CHARS
-    ):
-        raise ValueError(
-            f"Username must be between {config.USERNAME_MIN_CHARS} and {config.USERNAME_MAX_CHARS} characters"
-        )
     if len(post_content) > config.POST_MAX_CHARS:
         raise ValueError(f"Post cannot be more than {config.POST_MAX_CHARS} characters")
 
-    return {"content": post_content, "username": post_username}
+    return post_content
 
 
-def clean_up_posts(username: str):
-    if len(userposts := database.get_user_posts(username)) > config.USER_MAX_POSTS:
+def clean_up_posts(user_id: uuid.UUID):
+    if len(userposts := database.get_posts_by_userid(user_id)) > config.USER_MAX_POSTS:
         for post in userposts[config.USER_MAX_POSTS :]:
             database.delete_post(post["uuid"])
 
@@ -114,17 +104,16 @@ def get_latest_posts(count: int = 15) -> list[db.Post]:
 
 
 @app.post("/api/posts", status_code=status.HTTP_201_CREATED)
-def push_post(body: NewPostBody) -> db.Post:
+def push_post(body: NewPostBodyOLD) -> db.Post:
     try:
-        result = validate_post_create_request(body)
+        post_content = validate_post_content(body.content)
     except ValueError as err:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=err.args[0])
 
-    post_content = result["content"]
-    post_username = result["username"]
+    post_userid = body.user_id
 
-    returnval = database.push_post(content=post_content, user=post_username)
-    clean_up_posts(post_username)
+    returnval = database.push_post(content=post_content, user_id=post_userid)
+    clean_up_posts(post_userid)
     return returnval
 
 
@@ -145,17 +134,16 @@ def delete_post_by_uuid(post_uuid: uuid.UUID):
 
 
 @app.post("/api/posts/{post_uuid}/reply", status_code=status.HTTP_201_CREATED)
-def push_reply(post_uuid: uuid.UUID, body: NewPostBody) -> db.ReplyReturn:
+def push_reply(post_uuid: uuid.UUID, body: NewPostBodyOLD) -> db.ReplyReturn:
     try:
-        result = validate_post_create_request(body)
+        post_content = validate_post_content(body.content)
     except ValueError as err:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=err.args[0])
 
-    post_content = result["content"]
-    post_username = result["username"]
+    post_userid = body.user_id
 
     return database.push_reply(
-        content=post_content, user=post_username, reply_to=post_uuid
+        content=post_content, user_id=post_userid, reply_to=post_uuid
     )
 
 
@@ -167,12 +155,12 @@ def delete_reply_by_uuid(reply_uuid: uuid.UUID):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
 
 
-@app.get("/api/users/{username}/posts")
-def get_posts_from_user(username: str) -> list[db.Post]:
+@app.get("/api/users/{user_id}/posts")
+def get_posts_from_userid(user_id: uuid.UUID) -> list[db.Post]:
     try:
-        return database.get_user_posts(username)
+        return database.get_posts_by_userid(user_id)
     except KeyError as err:
-        logger.info(f"no posts from user {username}")
+        logger.info(f"no posts from user {user_id}")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
 
 

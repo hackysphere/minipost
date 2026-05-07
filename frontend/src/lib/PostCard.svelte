@@ -32,7 +32,8 @@
 
 <!-- TODO: make this whole thing clickable -->
 <div class="post-card">
-	<a class="username" href={`/user/${content.username}`}>{content.username}</a>
+	<!-- FIXME: this should show the username and not the user id; will need to fix in backend -->
+	<a class="username" href={`/user/${content.user_id}`}>{content.user_id}</a>
 	<p>{content.content}</p>
 	<div class="metadata">
 		<span>{posted_on_utc.toLocaleString()}</span>

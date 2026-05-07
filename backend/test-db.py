@@ -13,8 +13,11 @@ class TestPostOps(unittest.TestCase):
         self.local_posts: list[db.Post] = []
 
         for _ in range(100):
+            newuser = self.db.create_user(username=str(uuid.uuid4()))
             self.local_posts.append(
-                self.db.push_post(content=str(random.random()), user=str(uuid.uuid4()))
+                self.db.push_post(
+                    content=str(random.random()), user_id=newuser["user_id"]
+                )
             )
 
         self.local_posts = self.local_posts[::-1]
@@ -44,21 +47,25 @@ class TestPostOps(unittest.TestCase):
         self.assertRaises(KeyError, lambda: self.db.get_post(uuid))
 
 
-class TestUsernameOps(unittest.TestCase):
+class TestUserOps(unittest.TestCase):
     def setUp(self):
         self.db_file = tempfile.NamedTemporaryFile()
         self.db = db.Database(self.db_file.name)
         self.posts_user1: list[db.Post] = []
         self.posts_user2: list[db.Post] = []
-        self.user1 = str(uuid.uuid4())
-        self.user2 = str(uuid.uuid4())
+        self.user1_userid = self.db.create_user(username=str(uuid.uuid4()))["user_id"]
+        self.user2_userid = self.db.create_user(username=str(uuid.uuid4()))["user_id"]
 
         for _ in range(100):
             self.posts_user1.append(
-                self.db.push_post(content=str(random.random()), user=self.user1)
+                self.db.push_post(
+                    content=str(random.random()), user_id=self.user1_userid
+                )
             )
             self.posts_user2.append(
-                self.db.push_post(content=str(random.random()), user=self.user2)
+                self.db.push_post(
+                    content=str(random.random()), user_id=self.user2_userid
+                )
             )
 
         self.posts_user1 = self.posts_user1[::-1]
@@ -69,11 +76,11 @@ class TestUsernameOps(unittest.TestCase):
 
     def test_get_user_posts(self):
         self.assertListEqual(
-            self.db.get_user_posts(self.user1),
+            self.db.get_posts_by_userid(self.user1_userid),
             self.posts_user1,
         )
         self.assertListEqual(
-            self.db.get_user_posts(self.user2),
+            self.db.get_posts_by_userid(self.user2_userid),
             self.posts_user2,
         )
 
@@ -82,46 +89,41 @@ class TestReplyOps(unittest.TestCase):
     def setUp(self):
         self.db_file = tempfile.NamedTemporaryFile()
         self.db = db.Database(self.db_file.name)
-        self.local_posts: list[db.Post] = []
-
-        for _ in range(2):
-            self.local_posts.append(
-                self.db.push_post(content=str(random.random()), user=str(uuid.uuid4()))
-            )
-
-        self.local_posts = self.local_posts[::-1]
+        user = self.db.create_user(str(random.random()))
+        self.post_uuid = self.db.push_post(
+            content=str(random.random()), user_id=user["user_id"]
+        )["uuid"]
 
     def tearDown(self):
         self.db_file.close()
 
     def test_get_empty_reply_param(self):
-        example_post_uuid = self.local_posts[0]["uuid"]
-        self.assertIsNone(self.db.get_post(example_post_uuid)["replies"])
+        self.assertIsNone(self.db.get_post(self.post_uuid)["replies"])
 
     def test_get_reply(self):
-        example_post_uuid = self.local_posts[0]["uuid"]
+        reply_user_id = self.db.create_user(username=str(random.random()))["user_id"]
         reply_uuid = self.db.push_reply(
             content=str(random.random()),
-            user=str(uuid.uuid4()),
-            reply_to=example_post_uuid,
+            user_id=reply_user_id,
+            reply_to=self.post_uuid,
         )["reply"]["uuid"]
 
-        dbpost = self.db.get_post(example_post_uuid)
+        dbpost = self.db.get_post(self.post_uuid)
         if not dbpost["replies"]:
             self.fail("No replies found in post")
 
         self.assertEqual(reply_uuid, dbpost["replies"][0]["uuid"])
 
     def test_delete_reply(self):
-        example_post_uuid = self.local_posts[0]["uuid"]
+        reply_user_id = self.db.create_user(username=str(random.random()))["user_id"]
         reply_uuid = self.db.push_reply(
             content=str(random.random()),
-            user=str(uuid.uuid4()),
-            reply_to=example_post_uuid,
+            user_id=reply_user_id,
+            reply_to=self.post_uuid,
         )["reply"]["uuid"]
 
         self.db.delete_reply(reply_uuid)
-        self.assertIsNone(self.db.get_post(example_post_uuid)["replies"])
+        self.assertIsNone(self.db.get_post(self.post_uuid)["replies"])
 
 
 if __name__ == "__main__":
