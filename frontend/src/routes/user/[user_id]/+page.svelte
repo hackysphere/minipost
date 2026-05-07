@@ -2,11 +2,10 @@
 	import PostCard from "$lib/PostCard.svelte";
 	import type { PageProps } from "./$types";
 
-	let { params, data }: PageProps = $props();
+	let { data }: PageProps = $props();
 </script>
 
-<!-- FIXME: this should show the username instead of the user id -->
-<h1>user {params.user_id}</h1>
+<h1>user {data.user.username}</h1>
 {#each data.posts as post (post.uuid)}
 	<PostCard content={post} />
 {/each}

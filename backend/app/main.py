@@ -179,6 +179,19 @@ def delete_reply(reply_uuid: uuid.UUID):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
 
 
+# ===============
+# user operations
+# ===============
+
+
+@app.get("/api/users/{user_id}")
+def get_user(user_id: uuid.UUID) -> db.User:
+    try:
+        return database.get_user(user_id)
+    except KeyError as err:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
+
+
 # below are the dynamic routes (for the frontend and api 404s)
 # they must be placed last so that they don't override previous routes
 

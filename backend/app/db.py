@@ -34,6 +34,10 @@ class User(TypedDict):
     username: str
 
 
+class UserFull(User):
+    token_version: int
+
+
 def init_database(path: str):
     with contextlib.closing(sqlite3.connect(path)) as connection:
         cursor = connection.cursor()
@@ -83,7 +87,7 @@ def init_database(path: str):
 def add_types_to_sql_post(sql_output: list) -> Post:
     return Post(
         uuid=uuid.UUID(sql_output[0]),
-        posted_on=sql_output[1],
+        posted_on=int(sql_output[1]),
         content=sql_output[2],
         user_id=uuid.UUID(sql_output[3]),
         replies=None,
@@ -93,9 +97,17 @@ def add_types_to_sql_post(sql_output: list) -> Post:
 def add_types_to_sql_reply(sql_output: list) -> PostBase:
     return PostBase(
         uuid=uuid.UUID(sql_output[0]),
-        posted_on=sql_output[2],
+        posted_on=int(sql_output[2]),
         content=sql_output[3],
         user_id=uuid.UUID(sql_output[4]),
+    )
+
+
+def add_types_to_sql_user(sql_output: list) -> User:
+    return User(
+        user_id=uuid.UUID(sql_output[0]),
+        creation_ts=int(sql_output[1]),
+        username=sql_output[2],
     )
 
 
@@ -115,12 +127,13 @@ class Database:
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = connection.cursor()
             cursor.execute(
-                "SELECT * FROM Posts ORDER BY posted_on DESC LIMIT ?", (limit,)
+                "SELECT id FROM Posts ORDER BY posted_on DESC LIMIT ?", (limit,)
             )
-            posts = cursor.fetchall()
+            post_ids = cursor.fetchall()
 
-        posts_typed = [add_types_to_sql_post(post) for post in posts]
-
+        posts_typed: list[Post] = []
+        for id in post_ids:
+            posts_typed.append(self.get_post(id[0]))
         return posts_typed
 
     def get_posts_by_userid(self, user_id: uuid.UUID) -> list[Post]:
@@ -263,6 +276,17 @@ class Database:
     # user operations
     # ===============
 
+    def get_user(self, user_id: uuid.UUID) -> User:
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM Users WHERE user_id = ?", (str(user_id),))
+            user = cursor.fetchone()
+
+        if not user:
+            raise KeyError(f"User with id {user_id} not found")
+
+        return add_types_to_sql_user(user)
+
     def create_user(self, username: str) -> User:
         user = User(
             user_id=uuid.uuid4(),
@@ -285,3 +309,18 @@ class Database:
             connection.commit()
 
         return user
+
+    def delete_user(self, user_id: uuid.UUID):
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM Users WHERE user_id = ?", (str(user_id),))
+            post = cursor.fetchone()
+
+        if not post:
+            raise KeyError(f"User with id {user_id} not found")
+
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
+            cursor = connection.cursor()
+            cursor.execute("PRAGMA foreign_keys = true;")
+            cursor.execute("DELETE FROM Users WHERE user_id = ?", (str(user_id),))
+            connection.commit()

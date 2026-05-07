@@ -53,18 +53,18 @@ class TestUserOps(unittest.TestCase):
         self.db = db.Database(self.db_file.name)
         self.posts_user1: list[db.Post] = []
         self.posts_user2: list[db.Post] = []
-        self.user1_userid = self.db.create_user(username=str(uuid.uuid4()))["user_id"]
-        self.user2_userid = self.db.create_user(username=str(uuid.uuid4()))["user_id"]
+        self.user1 = self.db.create_user(username=str(uuid.uuid4()))
+        self.user2 = self.db.create_user(username=str(uuid.uuid4()))
 
         for _ in range(100):
             self.posts_user1.append(
                 self.db.create_post(
-                    content=str(random.random()), user_id=self.user1_userid
+                    content=str(random.random()), user_id=self.user1["user_id"]
                 )
             )
             self.posts_user2.append(
                 self.db.create_post(
-                    content=str(random.random()), user_id=self.user2_userid
+                    content=str(random.random()), user_id=self.user2["user_id"]
                 )
             )
 
@@ -76,13 +76,21 @@ class TestUserOps(unittest.TestCase):
 
     def test_get_user_posts(self):
         self.assertListEqual(
-            self.db.get_posts_by_userid(self.user1_userid),
+            self.db.get_posts_by_userid(self.user1["user_id"]),
             self.posts_user1,
         )
         self.assertListEqual(
-            self.db.get_posts_by_userid(self.user2_userid),
+            self.db.get_posts_by_userid(self.user2["user_id"]),
             self.posts_user2,
         )
+
+    def test_get_user_data(self):
+        self.assertEqual(self.db.get_user(self.user1["user_id"]), self.user1)
+        self.assertEqual(self.db.get_user(self.user2["user_id"]), self.user2)
+
+    def test_delete_user(self):
+        self.db.delete_user(self.user1["user_id"])
+        self.assertRaises(KeyError, lambda: self.db.get_user(self.user1["user_id"]))
 
 
 class TestReplyOps(unittest.TestCase):

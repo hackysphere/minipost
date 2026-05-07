@@ -88,6 +88,24 @@ export type ReplyReturn = {
 };
 
 /**
+ * User
+ */
+export type User = {
+	/**
+	 * User Id
+	 */
+	user_id: string;
+	/**
+	 * Creation Ts
+	 */
+	creation_ts: number;
+	/**
+	 * Username
+	 */
+	username: string;
+};
+
+/**
  * ValidationError
  */
 export type ValidationError = {
@@ -324,3 +342,33 @@ export type DeleteReplyResponses = {
 	 */
 	200: unknown;
 };
+
+export type GetUserData = {
+	body?: never;
+	path: {
+		/**
+		 * User Id
+		 */
+		user_id: string;
+	};
+	query?: never;
+	url: "/api/users/{user_id}";
+};
+
+export type GetUserErrors = {
+	/**
+	 * Validation Error
+	 */
+	422: HttpValidationError;
+};
+
+export type GetUserError = GetUserErrors[keyof GetUserErrors];
+
+export type GetUserResponses = {
+	/**
+	 * Successful Response
+	 */
+	200: User;
+};
+
+export type GetUserResponse = GetUserResponses[keyof GetUserResponses];
