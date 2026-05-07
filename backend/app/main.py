@@ -94,47 +94,44 @@ if config.RATE_LIMIT != -1:
     app.middleware("http")(ratelimit.rate_limit_by_ip)
 
 
+# ===================
+# global post getters
+# ===================
+
+
 @app.get("/api/posts")
 def get_latest_posts(count: int = 15) -> list[db.Post]:
     if count > config.MAX_LATEST_POSTS:
         count = config.MAX_LATEST_POSTS
     if count < 1:
         count = 1
-    return database.pull_latest_posts(count)
+    return database.get_latest_posts(count)
 
 
-@app.post("/api/posts", status_code=status.HTTP_201_CREATED)
-def push_post(body: NewPostBodyOLD) -> db.Post:
+@app.get("/api/users/{user_id}/posts")
+def get_posts_by_userid(user_id: uuid.UUID) -> list[db.Post]:
     try:
-        post_content = validate_post_content(body.content)
-    except ValueError as err:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=err.args[0])
+        return database.get_posts_by_userid(user_id)
+    except KeyError as err:
+        logger.info(f"no posts from user {user_id}")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
 
-    post_userid = body.user_id
 
-    returnval = database.push_post(content=post_content, user_id=post_userid)
-    clean_up_posts(post_userid)
-    return returnval
+# ===============
+# post operations
+# ===============
 
 
 @app.get("/api/posts/{post_uuid}")
-def get_post_by_uuid(post_uuid: uuid.UUID) -> db.Post:
+def get_post(post_uuid: uuid.UUID) -> db.Post:
     try:
         return database.get_post(post_uuid)
     except KeyError as err:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
 
 
-@app.delete("/api/posts/{post_uuid}")
-def delete_post_by_uuid(post_uuid: uuid.UUID):
-    try:
-        database.delete_post(post_uuid)
-    except KeyError as err:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
-
-
-@app.post("/api/posts/{post_uuid}/reply", status_code=status.HTTP_201_CREATED)
-def push_reply(post_uuid: uuid.UUID, body: NewPostBodyOLD) -> db.ReplyReturn:
+@app.post("/api/posts", status_code=status.HTTP_201_CREATED)
+def create_post(body: NewPostBodyOLD) -> db.Post:
     try:
         post_content = validate_post_content(body.content)
     except ValueError as err:
@@ -142,25 +139,43 @@ def push_reply(post_uuid: uuid.UUID, body: NewPostBodyOLD) -> db.ReplyReturn:
 
     post_userid = body.user_id
 
-    return database.push_reply(
+    returnval = database.create_post(content=post_content, user_id=post_userid)
+    clean_up_posts(post_userid)
+    return returnval
+
+
+@app.delete("/api/posts/{post_uuid}")
+def delete_post(post_uuid: uuid.UUID):
+    try:
+        database.delete_post(post_uuid)
+    except KeyError as err:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
+
+
+# ================
+# reply operations
+# ================
+
+
+@app.post("/api/posts/{post_uuid}/reply", status_code=status.HTTP_201_CREATED)
+def create_reply(post_uuid: uuid.UUID, body: NewPostBodyOLD) -> db.ReplyReturn:
+    try:
+        post_content = validate_post_content(body.content)
+    except ValueError as err:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=err.args[0])
+
+    post_userid = body.user_id
+
+    return database.create_reply(
         content=post_content, user_id=post_userid, reply_to=post_uuid
     )
 
 
 @app.delete("/api/replies/{reply_uuid}")
-def delete_reply_by_uuid(reply_uuid: uuid.UUID):
+def delete_reply(reply_uuid: uuid.UUID):
     try:
         database.delete_reply(reply_uuid)
     except KeyError as err:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
-
-
-@app.get("/api/users/{user_id}/posts")
-def get_posts_from_userid(user_id: uuid.UUID) -> list[db.Post]:
-    try:
-        return database.get_posts_by_userid(user_id)
-    except KeyError as err:
-        logger.info(f"no posts from user {user_id}")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
 
 

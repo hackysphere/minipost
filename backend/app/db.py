@@ -32,7 +32,6 @@ class User(TypedDict):
     user_id: uuid.UUID
     creation_ts: int
     username: str
-    token_version: int
 
 
 def init_database(path: str):
@@ -108,7 +107,11 @@ class Database:
         init_database(path)
         _logger.info(f"initialized database at {path}")
 
-    def pull_latest_posts(self, limit=-1) -> list[Post]:
+    # ===================
+    # global post getters
+    # ===================
+
+    def get_latest_posts(self, limit=-1) -> list[Post]:
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = connection.cursor()
             cursor.execute(
@@ -120,7 +123,49 @@ class Database:
 
         return posts_typed
 
-    def push_post(self, content: str, user_id: uuid.UUID) -> Post:
+    def get_posts_by_userid(self, user_id: uuid.UUID) -> list[Post]:
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
+            cursor = connection.cursor()
+            cursor.execute(
+                "SELECT id FROM Posts WHERE user_id = ? ORDER BY posted_on DESC",
+                (str(user_id),),
+            )
+            post_ids = cursor.fetchall()
+
+        if not post_ids:
+            raise KeyError(f"Posts from user with userid {user_id} not found")
+
+        posts_typed: list[Post] = []
+        for id in post_ids:
+            posts_typed.append(self.get_post(id[0]))
+        return posts_typed
+
+    # ===============
+    # post operations
+    # ===============
+
+    def get_post(self, post_uuid: uuid.UUID) -> Post:
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM Posts WHERE id = ?", (str(post_uuid),))
+            post = cursor.fetchone()
+
+            if not post:
+                raise KeyError(f"Post with UUID {post_uuid} not found")
+
+            cursor.execute(
+                "SELECT * FROM Replies WHERE parent_id = ?", (str(post_uuid),)
+            )
+            replies = cursor.fetchall()
+
+        typed_post = add_types_to_sql_post(post)
+        if replies:
+            typed_post["replies"] = []
+            for reply in replies:
+                typed_post["replies"].append(add_types_to_sql_reply(reply))
+        return typed_post
+
+    def create_post(self, content: str, user_id: uuid.UUID) -> Post:
         post = Post(
             uuid=uuid.uuid4(),
             posted_on=time.time_ns(),  # no python floating-point weirdness
@@ -146,7 +191,27 @@ class Database:
         _logger.info(f"post added with uuid {post['uuid']}")
         return post
 
-    def push_reply(
+    def delete_post(self, post_uuid: uuid.UUID):
+        # this is probably not efficient to check if a post exists first
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM Posts WHERE id = ?", (str(post_uuid),))
+            post = cursor.fetchone()
+
+        if not post:
+            raise KeyError(f"Post with UUID {post_uuid} not found")
+
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
+            cursor = connection.cursor()
+            cursor.execute("PRAGMA foreign_keys = true;")
+            cursor.execute("DELETE FROM Posts WHERE id = ?", (str(post_uuid),))
+            connection.commit()
+
+    # ================
+    # reply operations
+    # ================
+
+    def create_reply(
         self, content: str, user_id: uuid.UUID, reply_to: uuid.UUID
     ) -> ReplyReturn:
         reply = PostBase(
@@ -179,43 +244,6 @@ class Database:
         _logger.info(f"reply added to {reply_to} with uuid {reply['uuid']}")
         return ReplyReturn(reply=reply, parent_id=reply_to)
 
-    def get_post(self, post_uuid: uuid.UUID) -> Post:
-        with contextlib.closing(sqlite3.connect(self.path)) as connection:
-            cursor = connection.cursor()
-            cursor.execute("SELECT * FROM Posts WHERE id = ?", (str(post_uuid),))
-            post = cursor.fetchone()
-
-            if not post:
-                raise KeyError(f"Post with UUID {post_uuid} not found")
-
-            cursor.execute(
-                "SELECT * FROM Replies WHERE parent_id = ?", (str(post_uuid),)
-            )
-            replies = cursor.fetchall()
-
-        typed_post = add_types_to_sql_post(post)
-        if replies:
-            typed_post["replies"] = []
-            for reply in replies:
-                typed_post["replies"].append(add_types_to_sql_reply(reply))
-        return typed_post
-
-    def delete_post(self, post_uuid: uuid.UUID):
-        # this is probably not efficient to check if a post exists first
-        with contextlib.closing(sqlite3.connect(self.path)) as connection:
-            cursor = connection.cursor()
-            cursor.execute("SELECT * FROM Posts WHERE id = ?", (str(post_uuid),))
-            post = cursor.fetchone()
-
-        if not post:
-            raise KeyError(f"Post with UUID {post_uuid} not found")
-
-        with contextlib.closing(sqlite3.connect(self.path)) as connection:
-            cursor = connection.cursor()
-            cursor.execute("PRAGMA foreign_keys = true;")
-            cursor.execute("DELETE FROM Posts WHERE id = ?", (str(post_uuid),))
-            connection.commit()
-
     def delete_reply(self, reply_uuid: uuid.UUID):
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = connection.cursor()
@@ -231,29 +259,15 @@ class Database:
             cursor.execute("DELETE FROM Replies WHERE id = ?", (str(reply_uuid),))
             connection.commit()
 
-    def get_posts_by_userid(self, user_id: uuid.UUID) -> list[Post]:
-        with contextlib.closing(sqlite3.connect(self.path)) as connection:
-            cursor = connection.cursor()
-            cursor.execute(
-                "SELECT id FROM Posts WHERE user_id = ? ORDER BY posted_on DESC",
-                (str(user_id),),
-            )
-            post_ids = cursor.fetchall()
-
-        if not post_ids:
-            raise KeyError(f"Posts from user with userid {user_id} not found")
-
-        posts_typed: list[Post] = []
-        for id in post_ids:
-            posts_typed.append(self.get_post(id[0]))
-        return posts_typed
+    # ===============
+    # user operations
+    # ===============
 
     def create_user(self, username: str) -> User:
         user = User(
             user_id=uuid.uuid4(),
             creation_ts=time.time_ns(),
             username=username,
-            token_version=1,
         )
 
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
@@ -265,7 +279,7 @@ class Database:
                     str(user["user_id"]),
                     user["creation_ts"],
                     user["username"],
-                    user["token_version"],
+                    1,
                 ),
             )
             connection.commit()

@@ -149,151 +149,32 @@ export type GetLatestPostsResponses = {
 export type GetLatestPostsResponse =
 	GetLatestPostsResponses[keyof GetLatestPostsResponses];
 
-export type PushPostData = {
+export type CreatePostData = {
 	body: NewPostBodyOld;
 	path?: never;
 	query?: never;
 	url: "/api/posts";
 };
 
-export type PushPostErrors = {
+export type CreatePostErrors = {
 	/**
 	 * Validation Error
 	 */
 	422: HttpValidationError;
 };
 
-export type PushPostError = PushPostErrors[keyof PushPostErrors];
+export type CreatePostError = CreatePostErrors[keyof CreatePostErrors];
 
-export type PushPostResponses = {
+export type CreatePostResponses = {
 	/**
 	 * Successful Response
 	 */
 	201: Post;
 };
 
-export type PushPostResponse = PushPostResponses[keyof PushPostResponses];
+export type CreatePostResponse = CreatePostResponses[keyof CreatePostResponses];
 
-export type DeletePostByUuidData = {
-	body?: never;
-	path: {
-		/**
-		 * Post Uuid
-		 */
-		post_uuid: string;
-	};
-	query?: never;
-	url: "/api/posts/{post_uuid}";
-};
-
-export type DeletePostByUuidErrors = {
-	/**
-	 * Validation Error
-	 */
-	422: HttpValidationError;
-};
-
-export type DeletePostByUuidError =
-	DeletePostByUuidErrors[keyof DeletePostByUuidErrors];
-
-export type DeletePostByUuidResponses = {
-	/**
-	 * Successful Response
-	 */
-	200: unknown;
-};
-
-export type GetPostByUuidData = {
-	body?: never;
-	path: {
-		/**
-		 * Post Uuid
-		 */
-		post_uuid: string;
-	};
-	query?: never;
-	url: "/api/posts/{post_uuid}";
-};
-
-export type GetPostByUuidErrors = {
-	/**
-	 * Validation Error
-	 */
-	422: HttpValidationError;
-};
-
-export type GetPostByUuidError = GetPostByUuidErrors[keyof GetPostByUuidErrors];
-
-export type GetPostByUuidResponses = {
-	/**
-	 * Successful Response
-	 */
-	200: Post;
-};
-
-export type GetPostByUuidResponse =
-	GetPostByUuidResponses[keyof GetPostByUuidResponses];
-
-export type PushReplyData = {
-	body: NewPostBodyOld;
-	path: {
-		/**
-		 * Post Uuid
-		 */
-		post_uuid: string;
-	};
-	query?: never;
-	url: "/api/posts/{post_uuid}/reply";
-};
-
-export type PushReplyErrors = {
-	/**
-	 * Validation Error
-	 */
-	422: HttpValidationError;
-};
-
-export type PushReplyError = PushReplyErrors[keyof PushReplyErrors];
-
-export type PushReplyResponses = {
-	/**
-	 * Successful Response
-	 */
-	201: ReplyReturn;
-};
-
-export type PushReplyResponse = PushReplyResponses[keyof PushReplyResponses];
-
-export type DeleteReplyByUuidData = {
-	body?: never;
-	path: {
-		/**
-		 * Reply Uuid
-		 */
-		reply_uuid: string;
-	};
-	query?: never;
-	url: "/api/replies/{reply_uuid}";
-};
-
-export type DeleteReplyByUuidErrors = {
-	/**
-	 * Validation Error
-	 */
-	422: HttpValidationError;
-};
-
-export type DeleteReplyByUuidError =
-	DeleteReplyByUuidErrors[keyof DeleteReplyByUuidErrors];
-
-export type DeleteReplyByUuidResponses = {
-	/**
-	 * Successful Response
-	 */
-	200: unknown;
-};
-
-export type GetPostsFromUseridData = {
+export type GetPostsByUseridData = {
 	body?: never;
 	path: {
 		/**
@@ -305,24 +186,141 @@ export type GetPostsFromUseridData = {
 	url: "/api/users/{user_id}/posts";
 };
 
-export type GetPostsFromUseridErrors = {
+export type GetPostsByUseridErrors = {
 	/**
 	 * Validation Error
 	 */
 	422: HttpValidationError;
 };
 
-export type GetPostsFromUseridError =
-	GetPostsFromUseridErrors[keyof GetPostsFromUseridErrors];
+export type GetPostsByUseridError =
+	GetPostsByUseridErrors[keyof GetPostsByUseridErrors];
 
-export type GetPostsFromUseridResponses = {
+export type GetPostsByUseridResponses = {
 	/**
-	 * Response Get Posts From Userid
+	 * Response Get Posts By Userid
 	 *
 	 * Successful Response
 	 */
 	200: Array<Post>;
 };
 
-export type GetPostsFromUseridResponse =
-	GetPostsFromUseridResponses[keyof GetPostsFromUseridResponses];
+export type GetPostsByUseridResponse =
+	GetPostsByUseridResponses[keyof GetPostsByUseridResponses];
+
+export type DeletePostData = {
+	body?: never;
+	path: {
+		/**
+		 * Post Uuid
+		 */
+		post_uuid: string;
+	};
+	query?: never;
+	url: "/api/posts/{post_uuid}";
+};
+
+export type DeletePostErrors = {
+	/**
+	 * Validation Error
+	 */
+	422: HttpValidationError;
+};
+
+export type DeletePostError = DeletePostErrors[keyof DeletePostErrors];
+
+export type DeletePostResponses = {
+	/**
+	 * Successful Response
+	 */
+	200: unknown;
+};
+
+export type GetPostData = {
+	body?: never;
+	path: {
+		/**
+		 * Post Uuid
+		 */
+		post_uuid: string;
+	};
+	query?: never;
+	url: "/api/posts/{post_uuid}";
+};
+
+export type GetPostErrors = {
+	/**
+	 * Validation Error
+	 */
+	422: HttpValidationError;
+};
+
+export type GetPostError = GetPostErrors[keyof GetPostErrors];
+
+export type GetPostResponses = {
+	/**
+	 * Successful Response
+	 */
+	200: Post;
+};
+
+export type GetPostResponse = GetPostResponses[keyof GetPostResponses];
+
+export type CreateReplyData = {
+	body: NewPostBodyOld;
+	path: {
+		/**
+		 * Post Uuid
+		 */
+		post_uuid: string;
+	};
+	query?: never;
+	url: "/api/posts/{post_uuid}/reply";
+};
+
+export type CreateReplyErrors = {
+	/**
+	 * Validation Error
+	 */
+	422: HttpValidationError;
+};
+
+export type CreateReplyError = CreateReplyErrors[keyof CreateReplyErrors];
+
+export type CreateReplyResponses = {
+	/**
+	 * Successful Response
+	 */
+	201: ReplyReturn;
+};
+
+export type CreateReplyResponse =
+	CreateReplyResponses[keyof CreateReplyResponses];
+
+export type DeleteReplyData = {
+	body?: never;
+	path: {
+		/**
+		 * Reply Uuid
+		 */
+		reply_uuid: string;
+	};
+	query?: never;
+	url: "/api/replies/{reply_uuid}";
+};
+
+export type DeleteReplyErrors = {
+	/**
+	 * Validation Error
+	 */
+	422: HttpValidationError;
+};
+
+export type DeleteReplyError = DeleteReplyErrors[keyof DeleteReplyErrors];
+
+export type DeleteReplyResponses = {
+	/**
+	 * Successful Response
+	 */
+	200: unknown;
+};

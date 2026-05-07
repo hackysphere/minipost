@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/suspicious/noFallthroughSwitchClause: biome does not correctly detect svelte error() escaping the switch statement */
 import { error } from "@sveltejs/kit";
-import type { GetPostsFromUseridResponse } from "$lib/openapi/types.gen";
+import type { GetPostsByUseridResponse } from "$lib/openapi/types.gen";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async ({ fetch, params }) => {
@@ -16,6 +16,6 @@ export const load: PageLoad = async ({ fetch, params }) => {
 		}
 	}
 
-	const posts: GetPostsFromUseridResponse = await response.json();
+	const posts: GetPostsByUseridResponse = await response.json();
 	return { posts };
 };

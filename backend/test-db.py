@@ -15,7 +15,7 @@ class TestPostOps(unittest.TestCase):
         for _ in range(100):
             newuser = self.db.create_user(username=str(uuid.uuid4()))
             self.local_posts.append(
-                self.db.push_post(
+                self.db.create_post(
                     content=str(random.random()), user_id=newuser["user_id"]
                 )
             )
@@ -26,13 +26,13 @@ class TestPostOps(unittest.TestCase):
         self.db_file.close()
 
     def test_pull_latest_posts(self):
-        self.assertListEqual(self.local_posts, self.db.pull_latest_posts())
+        self.assertListEqual(self.local_posts, self.db.get_latest_posts())
 
     def test_pull_few_posts(self):
         pull_amount = 2
         self.assertListEqual(
             self.local_posts[:pull_amount],
-            self.db.pull_latest_posts(pull_amount),
+            self.db.get_latest_posts(pull_amount),
         )
 
     def test_get_post_by_uuid(self):
@@ -58,12 +58,12 @@ class TestUserOps(unittest.TestCase):
 
         for _ in range(100):
             self.posts_user1.append(
-                self.db.push_post(
+                self.db.create_post(
                     content=str(random.random()), user_id=self.user1_userid
                 )
             )
             self.posts_user2.append(
-                self.db.push_post(
+                self.db.create_post(
                     content=str(random.random()), user_id=self.user2_userid
                 )
             )
@@ -90,7 +90,7 @@ class TestReplyOps(unittest.TestCase):
         self.db_file = tempfile.NamedTemporaryFile()
         self.db = db.Database(self.db_file.name)
         user = self.db.create_user(str(random.random()))
-        self.post_uuid = self.db.push_post(
+        self.post_uuid = self.db.create_post(
             content=str(random.random()), user_id=user["user_id"]
         )["uuid"]
 
@@ -102,7 +102,7 @@ class TestReplyOps(unittest.TestCase):
 
     def test_get_reply(self):
         reply_user_id = self.db.create_user(username=str(random.random()))["user_id"]
-        reply_uuid = self.db.push_reply(
+        reply_uuid = self.db.create_reply(
             content=str(random.random()),
             user_id=reply_user_id,
             reply_to=self.post_uuid,
@@ -116,7 +116,7 @@ class TestReplyOps(unittest.TestCase):
 
     def test_delete_reply(self):
         reply_user_id = self.db.create_user(username=str(random.random()))["user_id"]
-        reply_uuid = self.db.push_reply(
+        reply_uuid = self.db.create_reply(
             content=str(random.random()),
             user_id=reply_user_id,
             reply_to=self.post_uuid,
