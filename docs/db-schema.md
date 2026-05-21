@@ -27,4 +27,12 @@ all columns are not null
 | `user_id`       | UUID4 as String                 | Primary      | UUID of user                          |
 | `creation_ts`   | Nanosecond timestamp as Integer |              | Timestamp of account creation         |
 | `username`      | String                          | Unique       | Username of account                   |
-| `token_version` | Integer                         |              | Password version (for JWT revocation) |
+
+## Auth
+
+| Column         | Type                  | Restrictions                                    | Description                           |
+| -------------- | --------------------- | ----------------------------------------------- | ------------------------------------- |
+| `user_id`      | UUID4 as String       | Primary, Foreign key (Users), Cascade deletions | User UUID                             |
+| `active`       | Boolean as Integer    |                                                 | Account enabled/disabled status       |
+| `pass_hash`    | Argon2 hash as String | Can be NULL                                     | Hash of password                      |
+| `pass_version` | Integer               |                                                 | Version of password (to use for JWTs) |
