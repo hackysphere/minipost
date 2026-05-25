@@ -51,40 +51,43 @@ class TestReplyOps(unittest.TestCase):
     def setUp(self):
         self.db_file = tempfile.NamedTemporaryFile()
         self.db = db.Database(self.db_file.name)
-        user = self.db.create_user(str(random.random()))
+
+        self.user = self.db.create_user(str(random.random()))
         self.post_uuid = self.db.create_post(
-            content=str(random.random()), user_id=user["user_id"]
+            content=str(random.random()), user_id=self.user["user_id"]
         )["uuid"]
+
+        self.reply_user_id = self.db.create_user(username=str(random.random()))[
+            "user_id"
+        ]
+        self.reply = self.db.create_reply(
+            content=str(random.random()),
+            user_id=self.reply_user_id,
+            reply_to=self.post_uuid,
+        )["reply"]
+        self.reply_uuid = self.reply["uuid"]
 
     def tearDown(self):
         self.db_file.close()
 
     def test_get_empty_reply_param(self):
-        self.assertIsNone(self.db.get_post(self.post_uuid)["replies"])
+        newpost = self.db.create_post(
+            content=str(random.random()), user_id=self.user["user_id"]
+        )
+        self.assertIsNone(self.db.get_post(newpost["uuid"])["replies"])
 
     def test_get_reply(self):
-        reply_user_id = self.db.create_user(username=str(random.random()))["user_id"]
-        reply_uuid = self.db.create_reply(
-            content=str(random.random()),
-            user_id=reply_user_id,
-            reply_to=self.post_uuid,
-        )["reply"]["uuid"]
+        self.assertEqual(self.db.get_reply(self.reply_uuid), self.reply)
 
+    def test_get_reply_from_post(self):
         dbpost = self.db.get_post(self.post_uuid)
         if not dbpost["replies"]:
             self.fail("No replies found in post")
 
-        self.assertEqual(reply_uuid, dbpost["replies"][0]["uuid"])
+        self.assertEqual(self.reply_uuid, dbpost["replies"][0]["uuid"])
 
     def test_delete_reply(self):
-        reply_user_id = self.db.create_user(username=str(random.random()))["user_id"]
-        reply_uuid = self.db.create_reply(
-            content=str(random.random()),
-            user_id=reply_user_id,
-            reply_to=self.post_uuid,
-        )["reply"]["uuid"]
-
-        self.db.delete_reply(reply_uuid)
+        self.db.delete_reply(self.reply_uuid)
         self.assertIsNone(self.db.get_post(self.post_uuid)["replies"])
 
 

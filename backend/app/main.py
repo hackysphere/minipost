@@ -9,7 +9,7 @@ from typing import Annotated, Literal
 import argon2
 import jwt
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestFormStrict
@@ -45,11 +45,6 @@ logger.setLevel(logging.INFO)
 database = db.Database()
 
 logger.info("welcome to minipost!")
-
-
-class NewPostBodyOLD(BaseModel):
-    content: str
-    user_id: uuid.UUID
 
 
 class TokenEndpointReturn(BaseModel):
@@ -226,13 +221,16 @@ def get_post(post_uuid: uuid.UUID) -> db.Post:
 
 
 @app.post("/api/posts", status_code=status.HTTP_201_CREATED)
-def create_post(body: NewPostBodyOLD) -> db.Post:
+def create_post(
+    user: Annotated[db.User, Depends(transform_user_token)],
+    body: Annotated[str, Body()],
+) -> db.Post:
     try:
-        post_content = validate_post_content(body.content)
+        post_content = validate_post_content(body)
     except ValueError as err:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=err.args[0])
 
-    post_userid = body.user_id
+    post_userid = user["user_id"]
 
     returnval = database.create_post(content=post_content, user_id=post_userid)
     clean_up_posts(post_userid)
@@ -240,8 +238,14 @@ def create_post(body: NewPostBodyOLD) -> db.Post:
 
 
 @app.delete("/api/posts/{post_uuid}")
-def delete_post(post_uuid: uuid.UUID):
+def delete_post(user: Annotated[db.User, Depends(transform_user_token)], post_uuid: uuid.UUID):  # fmt: off
     try:
+        post = database.get_post(post_uuid)
+        if post["user_id"] != user["user_id"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Unauthorized to delete post",
+            )
         database.delete_post(post_uuid)
     except KeyError as err:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
@@ -253,22 +257,30 @@ def delete_post(post_uuid: uuid.UUID):
 
 
 @app.post("/api/posts/{post_uuid}/reply", status_code=status.HTTP_201_CREATED)
-def create_reply(post_uuid: uuid.UUID, body: NewPostBodyOLD) -> db.ReplyReturn:
+def create_reply(
+    user: Annotated[db.User, Depends(transform_user_token)],
+    post_uuid: uuid.UUID,
+    body: Annotated[str, Body()],
+) -> db.ReplyReturn:
     try:
-        post_content = validate_post_content(body.content)
+        post_content = validate_post_content(body)
     except ValueError as err:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=err.args[0])
 
-    post_userid = body.user_id
-
     return database.create_reply(
-        content=post_content, user_id=post_userid, reply_to=post_uuid
+        content=post_content, user_id=user["user_id"], reply_to=post_uuid
     )
 
 
 @app.delete("/api/replies/{reply_uuid}")
-def delete_reply(reply_uuid: uuid.UUID):
+def delete_reply(user: Annotated[db.User, Depends(transform_user_token)], reply_uuid: uuid.UUID):  # fmt: off
     try:
+        reply = database.get_reply(reply_uuid)
+        if reply["user_id"] != user["user_id"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Unauthorized to delete reply",
+            )
         database.delete_reply(reply_uuid)
     except KeyError as err:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
@@ -287,7 +299,10 @@ def get_user(user_id: uuid.UUID) -> db.User:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
 
 
-# below are the dynamic routes (for the frontend and api 404s)
+# ============
+# extra routes
+# ============
+# below are the extra routes for the frontend and api 404s
 # they must be placed last so that they don't override previous routes
 
 

@@ -14,7 +14,7 @@ all columns are not null
 
 | Column      | Type                            | Restrictions                           | Description                |
 | ----------- | ------------------------------- | -------------------------------------- | -------------------------- |
-| `id`        | UUID4 as String                 | Primary                                | UUID of the post           |
+| `id`        | UUID4 as String                 | Primary                                | UUID of the reply          |
 | `parent_id` | UUID4 as String                 | Foreign key (Posts), Cascade deletions | UUID of the parent post    |
 | `posted_on` | Nanosecond timestamp as Integer |                                        | Timestamp of post          |
 | `content`   | String                          |                                        | Content of post            |

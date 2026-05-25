@@ -245,6 +245,17 @@ class Database:
     # reply operations
     # ================
 
+    def get_reply(self, reply_uuid: uuid.UUID) -> PostBase:
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
+            cursor = set_up_cursor(connection)
+            cursor.execute("SELECT * FROM Replies WHERE id = ?", (str(reply_uuid),))
+            reply = cursor.fetchone()
+
+            if not reply:
+                raise KeyError(f"Post with UUID {reply_uuid} not found")
+
+        return add_types_to_sql_reply(reply)
+
     def create_reply(
         self, content: str, user_id: uuid.UUID, reply_to: uuid.UUID
     ) -> ReplyReturn:
