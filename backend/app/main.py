@@ -1,13 +1,18 @@
-import os
 import logging
 import logging.handlers
+import os
 import sys
 import uuid
+from datetime import datetime, timedelta, timezone
+from typing import Annotated, Literal
 
+import argon2
+import jwt
 import uvicorn
-from fastapi import FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestFormStrict
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -45,6 +50,11 @@ logger.info("welcome to minipost!")
 class NewPostBodyOLD(BaseModel):
     content: str
     user_id: uuid.UUID
+
+
+class TokenEndpointReturn(BaseModel):
+    access_token: str
+    token_type: Literal["bearer"]
 
 
 def generate_unique_api_id(route: APIRoute):
@@ -92,6 +102,91 @@ else:
 # this applies to ALL ROUTES, including docs and the frontend!!!
 if config.RATE_LIMIT != -1:
     app.middleware("http")(ratelimit.rate_limit_by_ip)
+
+
+# ====
+# auth
+# ====
+
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/token")
+hasher = argon2.PasswordHasher()
+DUMMY_HASH = hasher.hash(str(uuid.uuid4()))
+
+
+@app.post("/api/token")
+def login(
+    form_data: Annotated[OAuth2PasswordRequestFormStrict, Depends()],
+) -> TokenEndpointReturn:
+    unauthenticated_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid username or password",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    try:
+        user = database.get_user_by_username(form_data.username)
+    except KeyError:
+        # hashing a dummy token here in order to make the http401 delay the same even if there is no password to check
+        try:
+            hasher.verify(DUMMY_HASH, "")
+        except argon2.exceptions.Argon2Error:
+            pass
+
+        raise unauthenticated_exception
+    authdata = database.get_auth_data(user["user_id"])
+
+    try:
+        hasher.verify(authdata["pass_hash"], form_data.password)
+    except argon2.exceptions.Argon2Error:
+        raise unauthenticated_exception
+
+    jwt_token = jwt.encode(
+        {
+            "sub": str(user["user_id"]),
+            "exp": datetime.now(timezone.utc) + timedelta(days=7),
+            "pass_ver": authdata["pass_version"],  # not part of jwt spec
+        },
+        config.JWT_KEY,
+        "HS256",
+    )
+    return TokenEndpointReturn(access_token=jwt_token, token_type="bearer")
+
+
+def transform_user_token(token: Annotated[str, Depends(oauth2_scheme)]) -> db.User:
+    unauthenticated_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid token",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    expired_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Expired token; reauthenticate",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    unauthorized_exception = HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN, detail="Access forbidden"
+    )
+
+    try:
+        json_token = jwt.decode(token, config.JWT_KEY, "HS256")
+        user_uuid = uuid.UUID(json_token["sub"])
+        authdata = database.get_auth_data(user_uuid)
+
+        if datetime.now(timezone.utc).timestamp() > json_token["exp"]:
+            raise expired_exception
+        if authdata["pass_version"] != json_token["pass_ver"]:
+            raise expired_exception
+        if authdata["active"] != 1:
+            raise unauthorized_exception
+    except jwt.ExpiredSignatureError:
+        raise expired_exception
+    except KeyError, jwt.InvalidTokenError, ValueError:  # ValueError from uuid encoding
+        raise unauthenticated_exception
+
+    return database.get_user(user_uuid)
 
 
 # ===================

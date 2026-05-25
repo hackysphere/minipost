@@ -304,6 +304,20 @@ class Database:
 
         return add_types_to_sql_user(user)
 
+    def get_user_by_username(self, username: str) -> User:
+        """
+        Only use this for login, using the UUID is much better and more consistent over time
+        """
+        with contextlib.closing(sqlite3.connect(self.path)) as connection:
+            cursor = set_up_cursor(connection)
+            cursor.execute("SELECT * FROM Users WHERE username = ?", (str(username),))
+            user = cursor.fetchone()
+
+        if not user:
+            raise KeyError(f"User with username {username} not found")
+
+        return add_types_to_sql_user(user)
+
     def create_user(self, username: str, pass_hash: str = "") -> User:
         user = User(
             user_id=uuid.uuid4(),

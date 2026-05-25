@@ -116,6 +116,11 @@ class TestUserOps(unittest.TestCase):
     def test_get_user_data(self):
         self.assertEqual(self.db.get_user(self.user1["user_id"]), self.user1)
 
+    def test_get_user_data_by_username(self):
+        self.assertEqual(
+            self.db.get_user_by_username(self.user1["username"]), self.user1
+        )
+
     def test_delete_user(self):
         self.db.delete_user(self.user1["user_id"])
         self.assertRaises(KeyError, lambda: self.db.get_user(self.user1["user_id"]))

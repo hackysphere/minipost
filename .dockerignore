@@ -16,6 +16,7 @@
 
 **/backend/data
 data
+jwtkey
 
 Dockerfile
 .dockerignore
