@@ -379,11 +379,14 @@ class Database:
             if not user:
                 raise KeyError(f"User with id {user_id} not found")
 
-            cursor.execute(
-                "UPDATE Users SET username = ? WHERE user_id = ?",
-                (username, str(user_id)),
-            )
-            connection.commit()
+            try:
+                cursor.execute(
+                    "UPDATE Users SET username = ? WHERE user_id = ?",
+                    (username, str(user_id)),
+                )
+                connection.commit()
+            except sqlite3.IntegrityError:
+                raise ValueError("Username already exists")
 
     # ===============
     # auth operations

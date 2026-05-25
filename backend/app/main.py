@@ -9,7 +9,7 @@ from typing import Annotated, Literal
 import argon2
 import jwt
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException, status, Body
+from fastapi import Depends, FastAPI, Form, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestFormStrict
@@ -223,7 +223,7 @@ def get_post(post_uuid: uuid.UUID) -> db.Post:
 @app.post("/api/posts", status_code=status.HTTP_201_CREATED)
 def create_post(
     user: Annotated[db.User, Depends(transform_user_token)],
-    body: Annotated[str, Body()],
+    body: Annotated[str, Form()],
 ) -> db.Post:
     try:
         post_content = validate_post_content(body)
@@ -260,7 +260,7 @@ def delete_post(user: Annotated[db.User, Depends(transform_user_token)], post_uu
 def create_reply(
     user: Annotated[db.User, Depends(transform_user_token)],
     post_uuid: uuid.UUID,
-    body: Annotated[str, Body()],
+    body: Annotated[str, Form()],
 ) -> db.ReplyReturn:
     try:
         post_content = validate_post_content(body)
@@ -297,6 +297,66 @@ def get_user(user_id: uuid.UUID) -> db.User:
         return database.get_user(user_id)
     except KeyError as err:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
+
+
+# ==================
+# account operations
+# ==================
+
+
+@app.get("/api/account/self")
+def get_self(user: Annotated[db.User, Depends(transform_user_token)]) -> db.User:
+    return user
+
+
+@app.post("/api/account/changeusername")
+def set_username(
+    user: Annotated[db.User, Depends(transform_user_token)],
+    new_username: Annotated[str, Form()],
+):
+    try:
+        if config.USERNAME_MIN_CHARS <= len(new_username) <= config.USERNAME_MAX_CHARS:
+            database.set_user_username(user["user_id"], new_username)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Username must be between {config.USERNAME_MIN_CHARS} and {config.USERNAME_MAX_CHARS} characters.",
+            )
+    except ValueError as err:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=err.args[0])
+
+
+@app.post("/api/account/changepassword")
+def set_password(
+    user: Annotated[db.User, Depends(transform_user_token)],
+    old_password: Annotated[str, Form()],
+    new_password: Annotated[str, Form()],
+):
+    try:
+        authdata = database.get_auth_data(user["user_id"])
+        hasher.verify(authdata["pass_hash"], old_password)
+        database.set_user_password(user["user_id"], hasher.hash(new_password))
+        return "Password change, please reauthenticate"
+    except argon2.exceptions.VerifyMismatchError:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid password"
+        )
+
+
+@app.post("/api/account/deleteaccount")
+def delete_account(
+    user: Annotated[db.User, Depends(transform_user_token)],
+    password: Annotated[str, Form()],
+):
+    try:
+        authdata = database.get_auth_data(user["user_id"])
+        hasher.verify(authdata["pass_hash"], password)
+        database.delete_user(user["user_id"])
+        return "Account deleted"
+    except argon2.exceptions.VerifyMismatchError:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid password"
+        )
 
 
 # ============
