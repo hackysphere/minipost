@@ -338,19 +338,22 @@ class Database:
 
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = set_up_cursor(connection)
-            cursor.execute(
-                "INSERT INTO Users (user_id, creation_ts, username) VALUES (?, ?, ?)",
-                (
-                    str(user["user_id"]),
-                    user["creation_ts"],
-                    user["username"],
-                ),
-            )
-            cursor.execute(
-                "INSERT INTO Auth (user_id, active, pass_hash, pass_version) VALUES (?, ?, ?, ?)",
-                (str(user["user_id"]), 1, pass_hash, 1),
-            )
-            connection.commit()
+            try:
+                cursor.execute(
+                    "INSERT INTO Users (user_id, creation_ts, username) VALUES (?, ?, ?)",
+                    (
+                        str(user["user_id"]),
+                        user["creation_ts"],
+                        user["username"],
+                    ),
+                )
+                cursor.execute(
+                    "INSERT INTO Auth (user_id, active, pass_hash, pass_version) VALUES (?, ?, ?, ?)",
+                    (str(user["user_id"]), 1, pass_hash, 1),
+                )
+                connection.commit()
+            except sqlite3.IntegrityError:
+                raise ValueError("Username already taken")
 
         return user
 

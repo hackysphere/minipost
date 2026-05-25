@@ -343,7 +343,22 @@ def set_password(
         )
 
 
-@app.post("/api/account/deleteaccount")
+@app.post("/api/account/createaccount")
+def create_account(
+    username: Annotated[str, Form()], password: Annotated[str, Form()]
+) -> TokenEndpointReturn:
+    try:
+        database.create_user(username, hasher.hash(password))
+    except ValueError as err:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=err.args[0])
+    return login(
+        OAuth2PasswordRequestFormStrict(
+            grant_type="password", username=username, password=password
+        )
+    )
+
+
+@app.delete("/api/account/deleteaccount")
 def delete_account(
     user: Annotated[db.User, Depends(transform_user_token)],
     password: Annotated[str, Form()],
