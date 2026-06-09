@@ -133,7 +133,7 @@ def login(
 
     try:
         hasher.verify(authdata["pass_hash"], form_data.password)
-    except argon2.exceptions.Argon2Error:
+    except argon2.exceptions.Argon2Error, argon2.exceptions.InvalidHashError:
         raise unauthenticated_exception
 
     jwt_token = jwt.encode(

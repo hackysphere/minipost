@@ -7,12 +7,15 @@ import { browser } from "$app/env";
 //
 // structure taken from https://stackoverflow.com/a/79261081
 export const authState = (() => {
+	// this actually doesn't have to be in a changed object (since this isn't being modified directly as an import)
+	// but there's no real reason to add that confusion into this yet
 	const auth = $state({
 		token: (() => {
 			if (!browser) return "TOKENLOAD";
 			return localStorage.getItem("jwt") ?? "";
 		})(),
 	});
+
 	const user = $derived.by(() => {
 		try {
 			const jwt_payload = auth.token.split(".")[1];
