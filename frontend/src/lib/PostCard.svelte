@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto, invalidateAll } from "$app/navigation";
+	import { authState } from "./AuthState.svelte";
 	import type { Post, PostBase } from "./openapi/types.gen";
 
 	let {
@@ -15,15 +16,39 @@
 
 	function deleteContent() {
 		if (reply) {
-			fetch(`/api/replies/${content.uuid}`, { method: "DELETE" }).then(
-				invalidateAll,
-			);
+			fetch(`/api/replies/${content.uuid}`, {
+				method: "DELETE",
+				headers: { Authorization: `Bearer ${authState.token}` },
+			}).then((res) => {
+				switch (res.status) {
+					case 200:
+						invalidateAll();
+						break;
+					case 401:
+					case 403:
+						authState.token = "";
+						goto("/auth");
+						break;
+				}
+			});
 		} else {
-			fetch(`/api/posts/${content.uuid}`, { method: "DELETE" }).then(() => {
-				if (basecontent) {
-					goto("/");
-				} else {
-					invalidateAll();
+			fetch(`/api/posts/${content.uuid}`, {
+				method: "DELETE",
+				headers: { Authorization: `Bearer ${authState.token}` },
+			}).then((res) => {
+				switch (res.status) {
+					case 200:
+						if (basecontent) {
+							goto("/");
+						} else {
+							invalidateAll();
+						}
+						break;
+					case 401:
+					case 403:
+						authState.token = "";
+						goto("/auth");
+						break;
 				}
 			});
 		}
@@ -37,12 +62,16 @@
 	<p>{content.content}</p>
 	<div class="metadata">
 		<span>{posted_on_utc.toLocaleString()}</span>
+
 		{#if !reply}
 			<a class="uuid" href={`/post/${content.uuid}`}>{content.uuid}</a>
 		{/if}
-		<button class="delete-button" type="button" onclick={deleteContent}>
-			delete
-		</button>
+
+		{#if authState.user_id === content.user_id}
+			<button class="delete-button" type="button" onclick={deleteContent}>
+				delete
+			</button>
+		{/if}
 	</div>
 </div>
 

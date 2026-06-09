@@ -5,6 +5,104 @@ export type ClientOptions = {
 };
 
 /**
+ * Body_create_account
+ */
+export type BodyCreateAccount = {
+	/**
+	 * Username
+	 */
+	username: string;
+	/**
+	 * Password
+	 */
+	password: string;
+};
+
+/**
+ * Body_create_post
+ */
+export type BodyCreatePost = {
+	/**
+	 * Body
+	 */
+	body: string;
+};
+
+/**
+ * Body_create_reply
+ */
+export type BodyCreateReply = {
+	/**
+	 * Body
+	 */
+	body: string;
+};
+
+/**
+ * Body_delete_account
+ */
+export type BodyDeleteAccount = {
+	/**
+	 * Password
+	 */
+	password: string;
+};
+
+/**
+ * Body_login
+ */
+export type BodyLogin = {
+	/**
+	 * Grant Type
+	 */
+	grant_type: string;
+	/**
+	 * Username
+	 */
+	username: string;
+	/**
+	 * Password
+	 */
+	password: string;
+	/**
+	 * Scope
+	 */
+	scope?: string;
+	/**
+	 * Client Id
+	 */
+	client_id?: string | null;
+	/**
+	 * Client Secret
+	 */
+	client_secret?: string | null;
+};
+
+/**
+ * Body_set_password
+ */
+export type BodySetPassword = {
+	/**
+	 * Old Password
+	 */
+	old_password: string;
+	/**
+	 * New Password
+	 */
+	new_password: string;
+};
+
+/**
+ * Body_set_username
+ */
+export type BodySetUsername = {
+	/**
+	 * New Username
+	 */
+	new_username: string;
+};
+
+/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -12,20 +110,6 @@ export type HttpValidationError = {
 	 * Detail
 	 */
 	detail?: Array<ValidationError>;
-};
-
-/**
- * NewPostBodyOLD
- */
-export type NewPostBodyOld = {
-	/**
-	 * Content
-	 */
-	content: string;
-	/**
-	 * User Id
-	 */
-	user_id: string;
 };
 
 /**
@@ -88,6 +172,20 @@ export type ReplyReturn = {
 };
 
 /**
+ * TokenEndpointReturn
+ */
+export type TokenEndpointReturn = {
+	/**
+	 * Access Token
+	 */
+	access_token: string;
+	/**
+	 * Token Type
+	 */
+	token_type: "bearer";
+};
+
+/**
  * User
  */
 export type User = {
@@ -133,6 +231,31 @@ export type ValidationError = {
 	};
 };
 
+export type LoginData = {
+	body: BodyLogin;
+	path?: never;
+	query?: never;
+	url: "/api/token";
+};
+
+export type LoginErrors = {
+	/**
+	 * Validation Error
+	 */
+	422: HttpValidationError;
+};
+
+export type LoginError = LoginErrors[keyof LoginErrors];
+
+export type LoginResponses = {
+	/**
+	 * Successful Response
+	 */
+	200: TokenEndpointReturn;
+};
+
+export type LoginResponse = LoginResponses[keyof LoginResponses];
+
 export type GetLatestPostsData = {
 	body?: never;
 	path?: never;
@@ -168,7 +291,7 @@ export type GetLatestPostsResponse =
 	GetLatestPostsResponses[keyof GetLatestPostsResponses];
 
 export type CreatePostData = {
-	body: NewPostBodyOld;
+	body: BodyCreatePost;
 	path?: never;
 	query?: never;
 	url: "/api/posts";
@@ -285,7 +408,7 @@ export type GetPostResponses = {
 export type GetPostResponse = GetPostResponses[keyof GetPostResponses];
 
 export type CreateReplyData = {
-	body: NewPostBodyOld;
+	body: BodyCreateReply;
 	path: {
 		/**
 		 * Post Uuid
@@ -372,3 +495,114 @@ export type GetUserResponses = {
 };
 
 export type GetUserResponse = GetUserResponses[keyof GetUserResponses];
+
+export type GetSelfData = {
+	body?: never;
+	path?: never;
+	query?: never;
+	url: "/api/account/self";
+};
+
+export type GetSelfResponses = {
+	/**
+	 * Successful Response
+	 */
+	200: User;
+};
+
+export type GetSelfResponse = GetSelfResponses[keyof GetSelfResponses];
+
+export type SetUsernameData = {
+	body: BodySetUsername;
+	path?: never;
+	query?: never;
+	url: "/api/account/changeusername";
+};
+
+export type SetUsernameErrors = {
+	/**
+	 * Validation Error
+	 */
+	422: HttpValidationError;
+};
+
+export type SetUsernameError = SetUsernameErrors[keyof SetUsernameErrors];
+
+export type SetUsernameResponses = {
+	/**
+	 * Successful Response
+	 */
+	200: unknown;
+};
+
+export type SetPasswordData = {
+	body: BodySetPassword;
+	path?: never;
+	query?: never;
+	url: "/api/account/changepassword";
+};
+
+export type SetPasswordErrors = {
+	/**
+	 * Validation Error
+	 */
+	422: HttpValidationError;
+};
+
+export type SetPasswordError = SetPasswordErrors[keyof SetPasswordErrors];
+
+export type SetPasswordResponses = {
+	/**
+	 * Successful Response
+	 */
+	200: unknown;
+};
+
+export type CreateAccountData = {
+	body: BodyCreateAccount;
+	path?: never;
+	query?: never;
+	url: "/api/account/createaccount";
+};
+
+export type CreateAccountErrors = {
+	/**
+	 * Validation Error
+	 */
+	422: HttpValidationError;
+};
+
+export type CreateAccountError = CreateAccountErrors[keyof CreateAccountErrors];
+
+export type CreateAccountResponses = {
+	/**
+	 * Successful Response
+	 */
+	200: TokenEndpointReturn;
+};
+
+export type CreateAccountResponse =
+	CreateAccountResponses[keyof CreateAccountResponses];
+
+export type DeleteAccountData = {
+	body: BodyDeleteAccount;
+	path?: never;
+	query?: never;
+	url: "/api/account/deleteaccount";
+};
+
+export type DeleteAccountErrors = {
+	/**
+	 * Validation Error
+	 */
+	422: HttpValidationError;
+};
+
+export type DeleteAccountError = DeleteAccountErrors[keyof DeleteAccountErrors];
+
+export type DeleteAccountResponses = {
+	/**
+	 * Successful Response
+	 */
+	200: unknown;
+};

@@ -1,20 +1,24 @@
 <script lang="ts">
+	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
-	import type { NewPostBodyOld } from "$lib/openapi/types.gen";
+	import { authState } from "$lib/AuthState.svelte";
+	import type { BodyCreatePost } from "$lib/openapi/types.gen";
 	import PostInput from "$lib/PostInput.svelte";
 
 	let errorValue: string | undefined = $state();
 
-	function sendPost(postContent: string, postUsername: string) {
-		let body: NewPostBodyOld = {
-			content: postContent,
-			user_id: postUsername,
+	function sendPost(postContent: string) {
+		let body: BodyCreatePost = {
+			body: postContent,
 		};
 
 		fetch("/api/posts", {
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(body),
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+				Authorization: `Bearer ${authState.token}`,
+			},
+			body: new URLSearchParams(body),
 		})
 			.then((res) => {
 				switch (res.status) {
@@ -32,6 +36,11 @@
 								() => (errorValue = "Server parsing error when sending post"),
 							);
 						break;
+					case 401:
+					case 403:
+						authState.token = "";
+						goto("/auth");
+						break;
 					default:
 						errorValue = "Error submitting post";
 				}
@@ -40,6 +49,12 @@
 				errorValue = "Failed to submit post, server may be offline";
 			});
 	}
+
+	onMount(() => {
+		if (authState.token === "") {
+			goto("/auth", { replaceState: true });
+		}
+	});
 </script>
 
 <h1>create a post</h1>

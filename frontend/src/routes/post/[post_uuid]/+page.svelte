@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { invalidateAll } from "$app/navigation";
-	import type { NewPostBodyOld } from "$lib/openapi/types.gen";
+	import { goto, invalidateAll } from "$app/navigation";
+	import { authState } from "$lib/AuthState.svelte";
+	import type { BodyCreateReply } from "$lib/openapi/types.gen";
 	import PostCard from "$lib/PostCard.svelte";
 	import PostInput from "$lib/PostInput.svelte";
 	import type { PageProps } from "./$types";
@@ -8,15 +9,18 @@
 	let { data }: PageProps = $props();
 
 	let sendPostError: string | undefined = $state();
-	function sendPost(content: string, userId: string) {
-		let body: NewPostBodyOld = {
-			content: content,
-			user_id: userId,
+	function sendPost(content: string) {
+		let body: BodyCreateReply = {
+			body: content,
 		};
+
 		fetch(`/api/posts/${data.post.uuid}/reply`, {
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(body),
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+				Authorization: `Bearer ${authState.token}`,
+			},
+			body: new URLSearchParams(body),
 		})
 			.then((res) => {
 				switch (res.status) {
@@ -32,6 +36,11 @@
 							.catch(() => {
 								sendPostError = "Server parsing error when sending post";
 							});
+						break;
+					case 401:
+					case 403:
+						authState.token = "";
+						goto("/auth");
 						break;
 					default:
 						sendPostError = "Error submitting post";
@@ -51,8 +60,14 @@
 		<PostCard content={reply} reply={true} />
 	{/each}
 {/if}
+
 <hr>
-<PostInput callback={sendPost} error={sendPostError} />
+
+{#if authState.token === ""}
+	<a href="/auth">login to send a reply!</a>
+{:else}
+	<PostInput callback={sendPost} error={sendPostError} />
+{/if}
 
 <style>
 	h1 {

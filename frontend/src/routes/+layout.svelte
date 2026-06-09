@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { authState } from "$lib/AuthState.svelte";
 	import favicon from "$lib/assets/favicon.svg";
 	import "./global.css";
 
@@ -80,6 +81,13 @@
 		</a>
 		<a href="/newpost">post</a>
 		<a href="/about">about</a>
+	</div>
+	<div>
+		{#if authState.token}
+			<a href="/account">account</a>
+		{:else}
+			<a href="/auth">login</a>
+		{/if}
 	</div>
 </nav>
 
