@@ -48,10 +48,13 @@
 
 	nav div * {
 		/* using rem/em here preserves spacing when changing root font size */
-		margin: 0 0.3em;
+		margin: 0 0.4em;
 	}
-	nav div *:first-child {
+	nav div.maincontent *:first-child {
 		margin: 0px;
+	}
+	nav div.accountcontent *:last-child {
+		margin-right: 0;
 	}
 	nav a {
 		text-decoration-line: none;
@@ -76,17 +79,21 @@
 </style>
 
 <nav>
-	<div>
+	<div class="maincontent">
 		<a href="/" class="logo-link">
 			<img src={favicon} alt="">
 			<span>minipost</span>
 		</a>
 		<a href="/newpost">post</a>
+		{#if authState.token}
+			<a href={`/user/${authState.user_id}`}>me!</a>
+		{/if}
 		<a href="/about">about</a>
 	</div>
-	<div>
+	<div class="accountcontent">
 		{#if authState.token}
 			<a href="/account">account</a>
+			<a href="/auth/logout">logout</a>
 		{:else}
 			<a href="/auth">login</a>
 		{/if}
