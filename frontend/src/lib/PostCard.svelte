@@ -53,7 +53,6 @@
 	}
 </script>
 
-<!-- TODO: make this whole thing clickable -->
 <div class="post-card">
 	<!-- FIXME: this should show the username and not the user id; will need to fix in backend -->
 	<a class="username" href={`/user/${content.user_id}`}>{content.user_id}</a>
@@ -101,13 +100,14 @@
 		gap: 5px 2em; /* pixels because line spacing, em because text spacing on same line */
 		flex-wrap: wrap;
 		color: var(--ctp-mocha-subtext0);
-		font-family: JetBrainsMono, monospace;
+		font-family: var(--font-mono);
 	}
 	.uuid {
 		word-break: break-all;
 	}
 
 	.delete-button {
+		font-family: var(--font-body);
 		color: var(--ctp-mocha-red);
 		margin-left: auto;
 		border: none;

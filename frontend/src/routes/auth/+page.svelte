@@ -111,7 +111,7 @@
 
 <style>
 	input {
-		font-family: Inter, sans-serif;
+		font-family: var(--font-body);
 		background-color: var(--ctp-mocha-surface1);
 		color: var(--ctp-mocha-text);
 		width: 100%;
@@ -123,6 +123,7 @@
 		box-sizing: border-box; /* this stops the box from overflowing into parent's margin, without doing messy stuff with maths on width */
 	}
 	button {
+		font-family: var(--font-body);
 		margin: 10px;
 		margin-left: 0px;
 		padding: 7px;

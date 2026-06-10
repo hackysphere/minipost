@@ -79,6 +79,6 @@
 	}
 
 	.uuid {
-		font-family: JetBrainsMono, monospace;
+		font-family: var(--font-mono);
 	}
 </style>

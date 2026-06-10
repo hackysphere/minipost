@@ -183,7 +183,11 @@
 		<p class="userinfo">
 			<b>{data.username}</b><br>
 			<small
-				>created on {new Date(data.creation_ts/1e6).toLocaleString()}<br>
+				>joined on
+				<span class="monospaced"
+					>{new Date(data.creation_ts / 1e6).toLocaleString()}</span
+				><br>
+				uuid <span class="monospaced">{data.user_id}</span><br>
 				<a href={`/user/${authState.user_id}`}>go to profile</a></small
 			>
 		</p>
@@ -261,7 +265,10 @@
 			<button
 				class="safe"
 				type="button"
-				onclick={() => {deleteAccountStage2 = false; deleteAccountPasswordField = "";}}
+				onclick={() => {
+					deleteAccountStage2 = false;
+					deleteAccountPasswordField = "";
+				}}
 			>
 				go back
 			</button>
@@ -278,7 +285,7 @@
 		border-radius: 10px;
 	}
 	input {
-		font-family: Inter, sans-serif;
+		font-family: var(--font-body);
 		background-color: var(--ctp-mocha-surface1);
 		color: var(--ctp-mocha-text);
 		width: 100%;
@@ -289,7 +296,8 @@
 		box-sizing: border-box; /* this stops the box from overflowing into parent's margin, without doing messy stuff with maths on width */
 	}
 	button,
-	button.safe {
+	.danger button.safe {
+		font-family: var(--font-body);
 		margin: 10px;
 		margin-left: 0px;
 		padding: 7px;
@@ -316,5 +324,9 @@
 
 	.userinfo {
 		font-size: 1.2em;
+	}
+
+	.monospaced {
+		font-family: var(--font-mono);
 	}
 </style>

@@ -12,7 +12,8 @@
 	<a href="https://hcks.dev"><img src={web_button} alt="hcks"></a>
 </div>
 <p style="color: var(--ctp-mocha-subtext0)">
-	this web app uses the font Inter, licensed under
+	this web app uses the fonts Space Grotesk and JetBrains Mono, both licensed
+	under
 	<a href="https://openfontlicense.org/documents/OFL.txt"
 		>SIL Open Font License 1.1</a
 	>

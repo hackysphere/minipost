@@ -5,7 +5,6 @@ import tomllib
 from typing import TypedDict, cast
 
 
-# TODO: make this use default parameters if they are not defined
 class ConfigFileTypes(TypedDict):
     USERNAME_MIN_CHARS: int
     USERNAME_MAX_CHARS: int

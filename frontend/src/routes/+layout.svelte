@@ -23,11 +23,13 @@
 	}
 
 	:root {
-		max-width: 750px;
+		--font-body: SpaceGrotesk, sans-serif;
+		--font-mono: JetBrainsMono, monospace;
+		max-width: 800px;
 		margin: 0 auto;
 		background-color: var(--ctp-mocha-base);
 		color: var(--ctp-mocha-text);
-		font-family: Inter, sans-serif;
+		font-family: var(--font-body);
 	}
 
 	nav {
