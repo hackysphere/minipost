@@ -3,8 +3,8 @@ name: minipost
 services:
   minipost:
     container_name: minipost
-    build: .
-    # no image to pull yet
+    image: ghcr.io/hackysphere/minipost
+    # build: .
     ports:
       - 8000:8000
     volumes:

@@ -4,7 +4,8 @@ uses python for backend and svelte for frontend
 
 ## deploying with docker
 image can be run with `docker run --rm -v ./minipost:/app/backend/data -p 8000:8000 ghcr.io/hackysphere/minipost`  
-or with docker compose with `docker compose up -d`
+or with docker compose with `docker compose up -d`  
+you will also need to secure this with a reverse proxy with SSL/TLS (also edit the config file to reflect this)
 
 ### configuration
 copy config-example.toml to the new data folder after running once with docker

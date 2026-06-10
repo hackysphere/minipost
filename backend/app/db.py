@@ -8,6 +8,7 @@ from typing import Literal, TypedDict
 
 from . import config
 
+SCHEMA_VERSION: int = 1
 _logger = logging.getLogger(__name__)
 
 
@@ -98,6 +99,7 @@ def init_database(path: str):
                     REFERENCES Users (user_id)
                     ON DELETE CASCADE
             ) STRICT""")
+        cursor.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
         connection.commit()
 
 
