@@ -12,7 +12,7 @@
 	let password = $state("");
 	let error = $state("");
 
-	async function login(signup: boolean = false) {
+	function login(signup: boolean = false) {
 		if (!username) {
 			error = "Username required";
 			return;

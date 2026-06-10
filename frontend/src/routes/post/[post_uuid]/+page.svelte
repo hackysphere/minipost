@@ -39,8 +39,7 @@
 						break;
 					case 401:
 					case 403:
-						authState.token = "";
-						goto("/auth");
+						goto("/auth/logout");
 						break;
 					default:
 						sendPostError = "Error submitting post";
