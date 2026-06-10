@@ -12,11 +12,6 @@
 	let password = $state("");
 	let error = $state("");
 
-	function shortcutHandler(event: KeyboardEvent) {
-		if (event.ctrlKey && event.key === "Enter") login();
-		console.log("logger");
-	}
-
 	async function login(signup: boolean = false) {
 		if (!username) {
 			error = "Username required";
@@ -88,28 +83,29 @@
 <h1>login</h1>
 
 <div>
-	<input
-		name="username"
-		bind:value={username}
-		placeholder="username"
-		onkeydown={shortcutHandler}
-	>
-	<br>
-	<input
-		name="password"
-		bind:value={password}
-		placeholder="password"
-		type="password"
-		onkeydown={shortcutHandler}
-	>
-	<br>
-	<button class="login" type="submit" onclick={() => login(false)}>
-		login
-	</button>
-	<button class="signup" type="button" onclick={() => login(true)}>
-		signup
-	</button>
-	<p style="color: var(--ctp-mocha-subtext0)">(ctrl+enter to login)</p>
+	<form>
+		<input
+			name="username"
+			bind:value={username}
+			placeholder="username"
+			required
+		>
+		<br>
+		<input
+			name="password"
+			bind:value={password}
+			placeholder="password"
+			type="password"
+			required
+		>
+		<br>
+		<button class="login" type="submit" onclick={() => login(false)}>
+			login
+		</button>
+		<button class="signup" type="button" onclick={() => login(true)}>
+			signup
+		</button>
+	</form>
 
 	{#if error}
 		<p class="error">{error}</p>
