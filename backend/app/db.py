@@ -214,6 +214,9 @@ class Database:
         return posts_typed
 
     def get_posts_by_userid(self, user_id: uuid.UUID) -> list[Post]:
+        # check to make sure user exists
+        self.get_user(user_id)
+
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = set_up_cursor(connection)
             cursor.execute(
@@ -221,9 +224,6 @@ class Database:
                 (str(user_id),),
             )
             post_ids = cursor.fetchall()
-
-        if not post_ids:
-            raise KeyError(f"Posts from user with userid {user_id} not found")
 
         posts_typed: list[Post] = []
         for id in post_ids:
@@ -285,15 +285,11 @@ class Database:
         return post
 
     def delete_post(self, post_uuid: uuid.UUID):
-        # this is probably not efficient to check if a post exists first
+        # check to make sure post exists
+        self.get_post(post_uuid)
+
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = set_up_cursor(connection)
-            cursor.execute("SELECT id FROM Posts WHERE id = ?", (str(post_uuid),))
-            post = cursor.fetchone()
-
-            if not post:
-                raise KeyError(f"Post with UUID {post_uuid} not found")
-
             cursor.execute("DELETE FROM Posts WHERE id = ?", (str(post_uuid),))
             connection.commit()
 
@@ -349,14 +345,11 @@ class Database:
         return reply
 
     def delete_reply(self, reply_uuid: uuid.UUID):
+        # check to make sure reply exists
+        self.get_reply(reply_uuid)
+
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = set_up_cursor(connection)
-            cursor.execute("SELECT id FROM Replies WHERE id = ?", (str(reply_uuid),))
-            reply = cursor.fetchone()
-
-            if not reply:
-                raise KeyError(f"Reply with UUID {reply_uuid} not found")
-
             cursor.execute("DELETE FROM Replies WHERE id = ?", (str(reply_uuid),))
             connection.commit()
 
@@ -418,30 +411,20 @@ class Database:
         return user
 
     def delete_user(self, user_id: uuid.UUID):
+        # check to make sure user exists
+        self.get_user(user_id)
+
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = set_up_cursor(connection)
-            cursor.execute(
-                "SELECT user_id FROM Users WHERE user_id = ?", (str(user_id),)
-            )
-            user = cursor.fetchone()
-
-            if not user:
-                raise KeyError(f"User with id {user_id} not found")
-
             cursor.execute("DELETE FROM Users WHERE user_id = ?", (str(user_id),))
             connection.commit()
 
     def set_user_username(self, user_id: uuid.UUID, username: str):
+        # check to make sure user exists
+        self.get_user(user_id)
+
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = set_up_cursor(connection)
-            cursor.execute(
-                "SELECT user_id FROM Users WHERE user_id = ?", (str(user_id),)
-            )
-            user = cursor.fetchone()
-
-            if not user:
-                raise KeyError(f"User with id {user_id} not found")
-
             try:
                 cursor.execute(
                     "UPDATE Users SET username = ? WHERE user_id = ?",
@@ -467,16 +450,11 @@ class Database:
         return add_types_to_sql_auth(authobject)
 
     def set_user_status(self, user_id: uuid.UUID, active: bool):
+        # check to make sure user exists
+        self.get_auth_data(user_id)
+
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = set_up_cursor(connection)
-            cursor.execute(
-                "SELECT user_id FROM Auth WHERE user_id = ?", (str(user_id),)
-            )
-            authuser = cursor.fetchone()
-
-            if not authuser:
-                raise KeyError(f"User with id {user_id} not found")
-
             cursor.execute(
                 "UPDATE Auth SET active = ? WHERE user_id = ?",
                 (int(active), str(user_id)),
@@ -487,16 +465,10 @@ class Database:
         """
         This function DOES NOT HASH THE PASSWORD, remember to do it before storing in the database!!!
         """
+        authobject = self.get_auth_data(user_id)
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = set_up_cursor(connection)
-            cursor.execute(
-                "SELECT pass_version FROM Auth WHERE user_id = ?", (str(user_id),)
-            )
-            authobject = cursor.fetchone()
-
-            if not authobject:
-                raise KeyError(f"User with id {user_id} not found")
-            new_pass_version: int = authobject[0] + 1
+            new_pass_version: int = authobject["pass_version"] + 1
 
             cursor.execute(
                 "UPDATE Auth SET pass_hash = ?, pass_version = ? WHERE user_id = ?",

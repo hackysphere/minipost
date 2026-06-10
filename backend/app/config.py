@@ -14,6 +14,7 @@ class ConfigFileTypes(TypedDict):
     RATE_LIMIT: int
     RATE_LIMIT_WINDOW: int
     MAX_LATEST_POSTS: int
+    SIGNUP_ENABLED: bool
 
     BEHIND_PROXY: bool
     JWT_EXPIRY: int
@@ -30,6 +31,7 @@ defaultconfig = {
     "RATE_LIMIT": 500,
     "RATE_LIMIT_WINDOW": 60,
     "MAX_LATEST_POSTS": 30,
+    "SIGNUP_ENABLED": True,
     "BEHIND_PROXY": False,
     "JWT_EXPIRY": 7,
     "DATA_FOLDER": "./data",
@@ -82,6 +84,7 @@ USER_MAX_POSTS = config["USER_MAX_POSTS"]
 RATE_LIMIT = config["RATE_LIMIT"]  # requests per time window
 RATE_LIMIT_WINDOW = config["RATE_LIMIT_WINDOW"]  # time window for requests
 MAX_LATEST_POSTS = config["MAX_LATEST_POSTS"]
+SIGNUP_ENABLED = config["SIGNUP_ENABLED"]
 BEHIND_PROXY = config["BEHIND_PROXY"]
 JWT_EXPIRY = config["JWT_EXPIRY"]
 DATA_FOLDER = config["DATA_FOLDER"]

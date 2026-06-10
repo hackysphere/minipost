@@ -25,8 +25,7 @@
 	let deleteAccountError = $state("");
 
 	function logout() {
-		authState.token = "";
-		goto("/auth");
+		goto("/auth/logout");
 	}
 
 	function changeUsername() {

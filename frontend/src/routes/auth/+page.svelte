@@ -61,6 +61,9 @@
 					case 403:
 						error = "Account disabled";
 						break;
+					case 405:
+						error = "Signup is disabled on this server";
+						break;
 					case 409:
 						error = "Username already taken";
 						break;

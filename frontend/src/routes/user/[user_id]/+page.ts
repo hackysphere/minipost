@@ -20,12 +20,8 @@ export const load: PageLoad = async ({ fetch, params }) => {
 	}
 
 	const posts_response = await fetch(`/api/users/${params.user_id}/posts`);
-	let userHasPosts = true;
 	if (!posts_response.ok) {
 		switch (posts_response.status) {
-			case 404:
-				userHasPosts = false;
-				break;
 			case 422:
 				error(422, "Invalid user id");
 			default:
@@ -34,7 +30,6 @@ export const load: PageLoad = async ({ fetch, params }) => {
 	}
 
 	const user: GetUserResponse = await user_response.json();
-	let posts: GetPostsByUseridResponse = [];
-	if (userHasPosts) posts = await posts_response.json();
+	const posts: GetPostsByUseridResponse = await posts_response.json();
 	return { user, posts };
 };

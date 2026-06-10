@@ -203,7 +203,6 @@ def get_posts_by_userid(user_id: uuid.UUID) -> list[db.Post]:
     try:
         return database.get_posts_by_userid(user_id)
     except KeyError as err:
-        logger.info(f"no posts from user {user_id}")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err.args[0])
 
 
@@ -347,6 +346,12 @@ def set_password(
 def create_account(
     username: Annotated[str, Form()], password: Annotated[str, Form()]
 ) -> TokenEndpointReturn:
+    if not config.SIGNUP_ENABLED:
+        raise HTTPException(
+            status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+            detail="Signup is disabled on this server",
+        )
+
     try:
         database.create_user(username, hasher.hash(password))
     except ValueError as err:
