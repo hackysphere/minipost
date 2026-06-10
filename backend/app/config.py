@@ -1,3 +1,5 @@
+import os
+import logging
 import secrets
 import tomllib
 from typing import TypedDict, cast
@@ -32,12 +34,18 @@ defaultconfig = {
     "DATA_FOLDER": "./data",
 }
 
+_logger = logging.getLogger(__name__)
+
+if not os.path.exists(defaultconfig["DATA_FOLDER"]):
+    _logger.warning("data directory does not exist, creating...")
+    os.mkdir(defaultconfig["DATA_FOLDER"])
+
 try:
     # binary mode because that's how tomllib works
     with open("./data/config.toml", "rb") as file:
         _fileconfig = tomllib.load(file)
 except FileNotFoundError:
-    print("No config file found, using defaults...")
+    _logger.warning("No config file found, using defaults...")
     _fileconfig = {}
 
 try:
@@ -50,14 +58,14 @@ try:
     if len(jwt_key) < 32:
         raise ValueError("jwtkey file has less than 32 bytes, which makes the key insecure, please regenerate it")  # fmt: off
 except FileNotFoundError:
-    print("No JWT key found, creating one...")
+    _logger.warning("No JWT key found, creating one...")
     jwt_key = secrets.token_hex(32)
 
     try:
         with open("./data/jwtkey", "w") as file:
             file.write(jwt_key)
     except FileNotFoundError:
-        print("Failed to create jwtkey file, all users will have to reauthenticate on next restart")  # fmt: off
+        _logger.warning("Failed to create jwtkey file, all users will have to reauthenticate on next restart")  # fmt: off
 
 
 # using cast makes type checking assume that the Any part from the file will still adhere to the type schema

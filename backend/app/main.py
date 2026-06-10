@@ -36,7 +36,7 @@ file_logger = logging.handlers.RotatingFileHandler(
 file_logger.setFormatter(logger_formatter)
 console_logger = logging.StreamHandler()
 console_logger.setFormatter(logger_formatter)
-logger = logging.getLogger("socialapp")
+logger = logging.getLogger(__name__)
 logger.addHandler(file_logger)
 logger.addHandler(console_logger)
 logger.setLevel(logging.INFO)
