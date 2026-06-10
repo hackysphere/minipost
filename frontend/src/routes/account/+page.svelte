@@ -6,12 +6,12 @@
 		BodyDeleteAccount,
 		BodySetPassword,
 		BodySetUsername,
+		User,
 	} from "$lib/openapi/types.gen";
-	import type { PageProps } from "./$types";
 
-	let { data }: PageProps = $props();
-
+	let userInfo: User | undefined = $state();
 	let deleteAccountStage2 = $state(false);
+	let loadError = $state("");
 
 	// could be better done... (without state)
 	let newUsernameField = $state("");
@@ -171,22 +171,53 @@
 	onMount(() => {
 		if (authState.token === "") {
 			goto("/auth", { replaceState: true });
+			return;
 		}
+
+		// this has to be done in the client because tokens are stored in localStorage
+		fetch("/api/account/self", {
+			headers: { Authorization: `Bearer ${authState.token}` },
+		})
+			.then((res) => {
+				switch (res.status) {
+					case 200:
+						res.json().then((res_json) => {
+							userInfo = res_json;
+						});
+						break;
+					case 401:
+					case 403:
+						goto("/auth/logout", { replaceState: true });
+						break;
+					default:
+						loadError = "Could not load account data";
+				}
+			})
+			.catch(() => (loadError = "Could not load account data"));
 	});
 </script>
 
-{#if !deleteAccountStage2}
+{#if !userInfo}
+	<h1>account settings</h1>
+	{#if loadError}
+		<h2 class="error">{loadError}</h2>
+	{:else}
+		<h2>loading...</h2>
+	{/if}
+{:else if !deleteAccountStage2}
 	<h1>account settings</h1>
 
 	<div>
 		<p class="userinfo">
-			<b>{data.username}</b><br>
+			<b>{userInfo.username}</b><br>
 			<small
 				>joined on
 				<span class="monospaced"
-					>{new Date(data.creation_ts / 1e6).toLocaleString()}</span
+					>{new Date(
+						userInfo.creation_ts / 1e6,
+					).toLocaleString()}</span
 				><br>
-				uuid <span class="monospaced">{data.user_id}</span><br>
+				uuid <span class="monospaced">{userInfo.user_id}</span><br>
 				<a href={`/user/${authState.user_id}`}>go to profile</a></small
 			>
 		</p>
