@@ -52,8 +52,8 @@
 					case 200:
 						res.json().then((res: TokenEndpointReturn) => {
 							authState.token = res.access_token;
+							goto("/", { replaceState: true });
 						});
-						goto("/", { replaceState: true });
 						break;
 					case 401:
 						error = "Invalid username/password";

@@ -128,20 +128,17 @@ export type Post = {
 	 * Content
 	 */
 	content: string;
-	/**
-	 * User Id
-	 */
-	user_id: string;
+	author: User;
 	/**
 	 * Replies
 	 */
-	replies: Array<PostBase> | null;
+	replies: Array<Reply> | null;
 };
 
 /**
- * PostBase
+ * Reply
  */
-export type PostBase = {
+export type Reply = {
 	/**
 	 * Uuid
 	 */
@@ -154,17 +151,7 @@ export type PostBase = {
 	 * Content
 	 */
 	content: string;
-	/**
-	 * User Id
-	 */
-	user_id: string;
-};
-
-/**
- * ReplyReturn
- */
-export type ReplyReturn = {
-	reply: PostBase;
+	author: User;
 	/**
 	 * Parent Id
 	 */
@@ -432,7 +419,7 @@ export type CreateReplyResponses = {
 	/**
 	 * Successful Response
 	 */
-	201: ReplyReturn;
+	201: Reply;
 };
 
 export type CreateReplyResponse =

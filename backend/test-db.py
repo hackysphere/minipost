@@ -64,7 +64,7 @@ class TestReplyOps(unittest.TestCase):
             content=str(random.random()),
             user_id=self.reply_user_id,
             reply_to=self.post_uuid,
-        )["reply"]
+        )
         self.reply_uuid = self.reply["uuid"]
 
     def tearDown(self):

@@ -8,30 +8,32 @@ from typing import Literal, TypedDict
 
 from . import config
 
-_logger = logging.getLogger("socialapp")
+_logger = logging.getLogger(__name__)
 
 
-class PostBase(TypedDict):
-    uuid: uuid.UUID
-    posted_on: int
-    content: str
-    user_id: uuid.UUID
-
-
-class Post(PostBase):
-    replies: list[PostBase] | None  # only used for the root post
-    # no option to use parent_id because that is not supported (at least for now)
-
-
-class ReplyReturn(TypedDict):
-    reply: PostBase
-    parent_id: uuid.UUID
+# these classes are arranged in this way to avoid ty type checking errors
 
 
 class User(TypedDict):
     user_id: uuid.UUID
     creation_ts: int
     username: str
+
+
+# do not use this class in functions, etc.
+class PostBase(TypedDict):
+    uuid: uuid.UUID
+    posted_on: int
+    content: str
+    author: User
+
+
+class Reply(PostBase):
+    parent_id: uuid.UUID
+
+
+class Post(PostBase):
+    replies: list[Reply] | None
 
 
 class AuthObject(TypedDict):
@@ -100,25 +102,61 @@ def init_database(path: str):
 
 
 def add_types_to_sql_post(sql_output: list) -> Post:
+    """
+    requires a list with following things at indexes:
+    0: post uuid
+    1: post creation timestamp
+    2: post content
+    4: author uuid
+    5: author account creation timestamp
+    6: author username
+    """
+    user = User(
+        user_id=uuid.UUID(sql_output[4]),
+        creation_ts=int(sql_output[5]),
+        username=sql_output[6],
+    )
     return Post(
         uuid=uuid.UUID(sql_output[0]),
         posted_on=int(sql_output[1]),
         content=sql_output[2],
-        user_id=uuid.UUID(sql_output[3]),
+        author=user,
         replies=None,
     )
 
 
-def add_types_to_sql_reply(sql_output: list) -> PostBase:
-    return PostBase(
+def add_types_to_sql_reply(sql_output: list) -> Reply:
+    """
+    requires a list with following things at indexes:
+    0: post uuid
+    1: post parent uuid
+    2: post creation timestamp
+    3: post content
+    5: author uuid
+    6: author account creation timestamp
+    7: author username
+    """
+    user = User(
+        user_id=uuid.UUID(sql_output[5]),
+        creation_ts=int(sql_output[6]),
+        username=sql_output[7],
+    )
+    return Reply(
         uuid=uuid.UUID(sql_output[0]),
+        parent_id=uuid.UUID(sql_output[1]),
         posted_on=int(sql_output[2]),
         content=sql_output[3],
-        user_id=uuid.UUID(sql_output[4]),
+        author=user,
     )
 
 
 def add_types_to_sql_user(sql_output: list) -> User:
+    """
+    requires a list with following things at indexes:
+    0: user uuid
+    1: user creation timestamp
+    2: user username
+    """
     return User(
         user_id=uuid.UUID(sql_output[0]),
         creation_ts=int(sql_output[1]),
@@ -127,6 +165,13 @@ def add_types_to_sql_user(sql_output: list) -> User:
 
 
 def add_types_to_sql_auth(sql_output: list) -> AuthObject:
+    """
+    requires a list with following things at indexes:
+    0: user uuid
+    1: user active/enabled status
+    2: user password hash
+    3: user password version
+    """
     return AuthObject(
         user_id=uuid.UUID(sql_output[0]),
         active=bool(sql_output[1]),
@@ -136,9 +181,17 @@ def add_types_to_sql_auth(sql_output: list) -> AuthObject:
 
 
 class Database:
+    """
+    main database class
+    functions should be self-explanatory
+    """
+
     def __init__(
         self, path: str | Literal[":memory:"] = f"{config.DATA_FOLDER}/minipost.db"
     ) -> None:
+        """
+        default path for database: {config.DATA_FOLDER}/minipost.db
+        """
         self.path = path
         init_database(path)
         _logger.info(f"initialized database at {path}")
@@ -181,18 +234,21 @@ class Database:
     # post operations
     # ===============
 
-    # TODO: figure out how to join the Posts and Users tables to get the usernames and such in the same row
     def get_post(self, post_uuid: uuid.UUID) -> Post:
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = set_up_cursor(connection)
-            cursor.execute("SELECT * FROM Posts WHERE id = ?", (str(post_uuid),))
+            cursor.execute(
+                "SELECT * FROM Posts JOIN Users ON Posts.user_id = Users.user_id WHERE Posts.id = ?",
+                (str(post_uuid),),
+            )
             post = cursor.fetchone()
 
             if not post:
                 raise KeyError(f"Post with UUID {post_uuid} not found")
 
             cursor.execute(
-                "SELECT * FROM Replies WHERE parent_id = ?", (str(post_uuid),)
+                "SELECT * FROM Replies JOIN Users ON Replies.user_id = Users.user_id WHERE Replies.parent_id = ?",
+                (str(post_uuid),),
             )
             replies = cursor.fetchall()
 
@@ -208,7 +264,7 @@ class Database:
             uuid=uuid.uuid4(),
             posted_on=time.time_ns(),  # no python floating-point weirdness
             content=content,
-            user_id=user_id,
+            author=self.get_user(user_id),
             replies=None,
         )
 
@@ -220,7 +276,7 @@ class Database:
                     str(post["uuid"]),
                     post["posted_on"],
                     post["content"],
-                    str(post["user_id"]),
+                    str(post["author"]["user_id"]),
                 ),
             )
             connection.commit()
@@ -245,10 +301,13 @@ class Database:
     # reply operations
     # ================
 
-    def get_reply(self, reply_uuid: uuid.UUID) -> PostBase:
+    def get_reply(self, reply_uuid: uuid.UUID) -> Reply:
         with contextlib.closing(sqlite3.connect(self.path)) as connection:
             cursor = set_up_cursor(connection)
-            cursor.execute("SELECT * FROM Replies WHERE id = ?", (str(reply_uuid),))
+            cursor.execute(
+                "SELECT * FROM Replies JOIN Users ON Replies.user_id = Users.user_id WHERE Replies.id = ?",
+                (str(reply_uuid),),
+            )
             reply = cursor.fetchone()
 
             if not reply:
@@ -258,12 +317,13 @@ class Database:
 
     def create_reply(
         self, content: str, user_id: uuid.UUID, reply_to: uuid.UUID
-    ) -> ReplyReturn:
-        reply = PostBase(
+    ) -> Reply:
+        reply = Reply(
             uuid=uuid.uuid4(),
+            parent_id=reply_to,
             posted_on=time.time_ns(),  # no python floating-point weirdness
             content=content,
-            user_id=user_id,
+            author=self.get_user(user_id),
         )
 
         try:
@@ -280,13 +340,13 @@ class Database:
                     str(reply_to),
                     reply["posted_on"],
                     reply["content"],
-                    str(reply["user_id"]),
+                    str(reply["author"]["user_id"]),
                 ),
             )
             connection.commit()
 
         _logger.info(f"reply added to {reply_to} with uuid {reply['uuid']}")
-        return ReplyReturn(reply=reply, parent_id=reply_to)
+        return reply
 
     def delete_reply(self, reply_uuid: uuid.UUID):
         with contextlib.closing(sqlite3.connect(self.path)) as connection:

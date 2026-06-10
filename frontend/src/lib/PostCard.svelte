@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { goto, invalidateAll } from "$app/navigation";
 	import { authState } from "./AuthState.svelte";
-	import type { Post, PostBase } from "./openapi/types.gen";
+	import type { Post, Reply } from "./openapi/types.gen";
 
 	let {
 		content,
 		reply = false,
 		basecontent = false,
 	}: {
-		content: Post | PostBase;
+		content: Post | Reply;
 		reply?: boolean;
 		basecontent?: boolean;
 	} = $props();
@@ -54,8 +54,9 @@
 </script>
 
 <div class="post-card">
-	<!-- FIXME: this should show the username and not the user id; will need to fix in backend -->
-	<a class="username" href={`/user/${content.user_id}`}>{content.user_id}</a>
+	<a class="username" href={`/user/${content.author.user_id}`}
+		>{content.author.username}</a
+	>
 	<p>{content.content}</p>
 	<div class="metadata">
 		<span>{posted_on_utc.toLocaleString()}</span>
@@ -64,7 +65,7 @@
 			<a class="uuid" href={`/post/${content.uuid}`}>{content.uuid}</a>
 		{/if}
 
-		{#if authState.user_id === content.user_id}
+		{#if authState.user_id === content.author.user_id}
 			<button class="delete-button" type="button" onclick={deleteContent}>
 				delete
 			</button>

@@ -241,7 +241,7 @@ def create_post(
 def delete_post(user: Annotated[db.User, Depends(transform_user_token)], post_uuid: uuid.UUID):  # fmt: off
     try:
         post = database.get_post(post_uuid)
-        if post["user_id"] != user["user_id"]:
+        if post["author"]["user_id"] != user["user_id"]:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Unauthorized to delete post",
@@ -261,7 +261,7 @@ def create_reply(
     user: Annotated[db.User, Depends(transform_user_token)],
     post_uuid: uuid.UUID,
     body: Annotated[str, Form()],
-) -> db.ReplyReturn:
+) -> db.Reply:
     try:
         post_content = validate_post_content(body)
     except ValueError as err:
@@ -276,7 +276,7 @@ def create_reply(
 def delete_reply(user: Annotated[db.User, Depends(transform_user_token)], reply_uuid: uuid.UUID):  # fmt: off
     try:
         reply = database.get_reply(reply_uuid)
-        if reply["user_id"] != user["user_id"]:
+        if reply["author"]["user_id"] != user["user_id"]:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Unauthorized to delete reply",

@@ -31,10 +31,10 @@
 						res
 							.text()
 							.then((err_response) => {
-								sendReplyError = `Server parsing error when sending post: ${JSON.parse(err_response).detail}`;
+								sendReplyError = `Server parsing error when sending reply: ${JSON.parse(err_response).detail}`;
 							})
 							.catch(() => {
-								sendReplyError = "Server parsing error when sending post";
+								sendReplyError = "Server parsing error when sending reply";
 							});
 						break;
 					case 401:
@@ -42,11 +42,11 @@
 						goto("/auth/logout");
 						break;
 					default:
-						sendReplyError = "Error submitting post";
+						sendReplyError = "Error submitting reply";
 				}
 			})
 			.catch(() => {
-				sendReplyError = "Failed to submit post, server may be offline";
+				sendReplyError = "Failed to submit reply, server may be offline";
 			});
 	}
 </script>

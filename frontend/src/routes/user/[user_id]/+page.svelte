@@ -5,7 +5,10 @@
 	let { data }: PageProps = $props();
 </script>
 
-<h1>user {data.user.username}</h1>
+<h1>
+	user <span class="monospace">{data.user.username}</span><br>
+	<small>uuid <span class="monospace">{data.user.user_id}</span></small>
+</h1>
 {#each data.posts as post (post.uuid)}
 	<PostCard content={post} />
 {/each}
@@ -13,3 +16,9 @@
 {#if data.posts.length === 0}
 	<p>this user hasn't posted yet!</p>
 {/if}
+
+<style>
+	.monospace {
+		font-family: var(--font-mono);
+	}
+</style>
