@@ -23,7 +23,7 @@ export const authState = (() => {
 
 			return payload.sub;
 		} catch {
-			return { user_id: "null" };
+			return "noid";
 		}
 	});
 

@@ -139,7 +139,7 @@ def login(
     jwt_token = jwt.encode(
         {
             "sub": str(user["user_id"]),
-            "exp": datetime.now(timezone.utc) + timedelta(days=7),
+            "exp": datetime.now(timezone.utc) + timedelta(days=config.JWT_EXPIRY),
             "pass_ver": authdata["pass_version"],  # not part of jwt spec
         },
         config.JWT_KEY,

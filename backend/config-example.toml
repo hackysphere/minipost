@@ -10,3 +10,5 @@ RATE_LIMIT_WINDOW = 60  # time window for requests
 MAX_LATEST_POSTS = 30
 
 BEHIND_PROXY = false
+# how long user tokens should be valid for (in days)
+JWT_EXPIRY = 7

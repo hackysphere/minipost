@@ -131,7 +131,7 @@ def add_types_to_sql_auth(sql_output: list) -> AuthObject:
         user_id=uuid.UUID(sql_output[0]),
         active=bool(sql_output[1]),
         pass_hash=sql_output[2],
-        pass_version=sql_output[3],
+        pass_version=int(sql_output[3]),
     )
 
 

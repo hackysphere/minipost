@@ -8,8 +8,8 @@
 
 	let { data }: PageProps = $props();
 
-	let sendPostError: string | undefined = $state();
-	function sendPost(content: string) {
+	let sendReplyError: string | undefined = $state();
+	function sendReply(content: string) {
 		let body: BodyCreateReply = {
 			body: content,
 		};
@@ -31,10 +31,10 @@
 						res
 							.text()
 							.then((err_response) => {
-								sendPostError = `Server parsing error when sending post: ${JSON.parse(err_response).detail}`;
+								sendReplyError = `Server parsing error when sending post: ${JSON.parse(err_response).detail}`;
 							})
 							.catch(() => {
-								sendPostError = "Server parsing error when sending post";
+								sendReplyError = "Server parsing error when sending post";
 							});
 						break;
 					case 401:
@@ -42,11 +42,11 @@
 						goto("/auth/logout");
 						break;
 					default:
-						sendPostError = "Error submitting post";
+						sendReplyError = "Error submitting post";
 				}
 			})
 			.catch(() => {
-				sendPostError = "Failed to submit post, server may be offline";
+				sendReplyError = "Failed to submit post, server may be offline";
 			});
 	}
 </script>
@@ -65,7 +65,7 @@
 {#if authState.token === ""}
 	<a href="/auth">login to send a reply!</a>
 {:else}
-	<PostInput callback={sendPost} error={sendPostError} />
+	<PostInput callback={sendReply} error={sendReplyError} />
 {/if}
 
 <style>

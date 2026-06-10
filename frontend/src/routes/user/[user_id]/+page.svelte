@@ -11,5 +11,5 @@
 {/each}
 
 {#if data.posts.length === 0}
-	<p>no posts were found!</p>
+	<p>this user hasn't posted yet!</p>
 {/if}

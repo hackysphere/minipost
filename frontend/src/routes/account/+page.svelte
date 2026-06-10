@@ -117,7 +117,7 @@
 						logout();
 						break;
 					case 403:
-						// this case has a sort-of bad error code...
+						// the user might also be disabled...
 						changePasswordError = "Invalid current password";
 						break;
 					default:
@@ -155,7 +155,7 @@
 						logout();
 						break;
 					case 403:
-						// this case has a sort-of bad error code...
+						// the user might also be disabled...
 						deleteAccountError = "Invalid current password";
 						break;
 					default:
@@ -288,7 +288,8 @@
 		border-radius: 5px;
 		box-sizing: border-box; /* this stops the box from overflowing into parent's margin, without doing messy stuff with maths on width */
 	}
-	button {
+	button,
+	button.safe {
 		margin: 10px;
 		margin-left: 0px;
 		padding: 7px;
@@ -311,10 +312,6 @@
 	button.danger {
 		color: var(--ctp-mocha-base);
 		background-color: var(--ctp-mocha-maroon);
-	}
-	button.safe {
-		color: var(--ctp-mocha-base);
-		background-color: var(--ctp-mocha-blue);
 	}
 
 	.userinfo {

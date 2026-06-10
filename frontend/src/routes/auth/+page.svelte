@@ -56,8 +56,10 @@
 						goto("/", { replaceState: true });
 						break;
 					case 401:
-					case 403:
 						error = "Invalid username/password";
+						break;
+					case 403:
+						error = "Account disabled";
 						break;
 					case 409:
 						error = "Username already taken";
@@ -90,7 +92,6 @@
 			placeholder="username"
 			required
 		>
-		<br>
 		<input
 			name="password"
 			bind:value={password}
@@ -98,7 +99,6 @@
 			type="password"
 			required
 		>
-		<br>
 		<button class="login" type="submit" onclick={() => login(false)}>
 			login
 		</button>
@@ -106,10 +106,7 @@
 			signup
 		</button>
 	</form>
-
-	{#if error}
-		<p class="error">{error}</p>
-	{/if}
+	<p class="error">{error}</p>
 </div>
 
 <style>
