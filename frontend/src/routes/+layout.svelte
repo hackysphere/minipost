@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from "$app/state";
 	import { authState } from "$lib/AuthState.svelte";
 	import favicon from "$lib/assets/favicon.svg";
 	import "./global.css";
@@ -7,8 +8,15 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon}>
 	<title>minipost</title>
+	<link rel="icon" href={favicon}>
+	<meta property="og:title" content="minipost">
+	<meta
+		property="og:descripton"
+		content="app that posts to a temporary global timeline"
+	>
+	<meta property="og:type" content="website">
+	<meta property="og:url" content={page.url.href}>
 </svelte:head>
 
 <style>
