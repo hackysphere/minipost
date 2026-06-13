@@ -8,14 +8,7 @@
 </script>
 
 <svelte:head>
-	<title>minipost</title>
-	<link rel="icon" href={favicon}>
-	<meta property="og:title" content="minipost">
-	<meta
-		property="og:descripton"
-		content="app that posts to a temporary global timeline"
-	>
-	<meta property="og:type" content="website">
+	<link rel="icon" href="/favicon.svg">
 	<meta property="og:url" content={page.url.href}>
 </svelte:head>
 
