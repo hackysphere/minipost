@@ -42,6 +42,9 @@
 		padding: 10px;
 		border-radius: 5px;
 		box-sizing: border-box; /* this stops the box from overflowing into parent's margin, without doing messy stuff with maths on width */
+		min-height: 8rem;
+		max-height: 40vh;
+		field-sizing: content;
 	}
 	button {
 		font-family: var(--font-body);

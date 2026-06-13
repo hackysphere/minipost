@@ -75,7 +75,7 @@
 
 	hr {
 		margin: 20px 0;
-		color: #0000;
+		border: none;
 	}
 
 	.uuid {
