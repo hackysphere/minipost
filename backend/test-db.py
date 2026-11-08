@@ -1,3 +1,4 @@
+# ruff: noqa: SIM115  # disable warnings for using tempfiles without a context manager
 import random
 import tempfile
 import unittest

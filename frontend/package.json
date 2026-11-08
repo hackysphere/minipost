@@ -1,6 +1,6 @@
 {
 	"name": "minipost-frontend",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"private": false,
 	"type": "module",
 	"scripts": {
@@ -17,15 +17,15 @@
 		"openapigen": "openapi-ts"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.4.16",
+		"@biomejs/biome": "^2.6.6",
 		"@catppuccin/palette": "^1.8.0",
 		"@hey-api/openapi-ts": "0.98.2",
-		"@sveltejs/adapter-static": "^3.0.10",
-		"@sveltejs/kit": "^2.63.1",
-		"@sveltejs/vite-plugin-svelte": "^7.1.2",
-		"svelte": "^5.56.3",
-		"svelte-check": "^4.6.0",
+		"@sveltejs/adapter-static": "^3.0.11",
+		"@sveltejs/kit": "^2.70.4",
+		"@sveltejs/vite-plugin-svelte": "^7.3.1",
+		"svelte": "^5.57.3",
+		"svelte-check": "^4.7.8",
 		"typescript": "^6.0.3",
-		"vite": "^8.0.16"
+		"vite": "^8.3.6"
 	}
 }

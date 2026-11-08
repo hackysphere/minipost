@@ -1,7 +1,9 @@
 import time
 from typing import TypedDict
+
 from fastapi import Request, status
 from fastapi.responses import PlainTextResponse
+
 from . import config
 
 

@@ -213,9 +213,7 @@
 			<small
 				>joined on
 				<span class="monospaced"
-					>{new Date(
-						userInfo.creation_ts / 1e6,
-					).toLocaleString()}</span
+					>{new Date(userInfo.creation_ts / 1e6).toLocaleString()}</span
 				><br>
 				uuid <span class="monospaced">{userInfo.user_id}</span><br>
 				<a href={`/user/${authState.user_id}`}>go to profile</a></small

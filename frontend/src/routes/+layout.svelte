@@ -1,16 +1,12 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import { authState } from "$lib/AuthState.svelte";
-	import favicon from "$lib/assets/favicon.svg";
 	import "./global.css";
 
 	let { children } = $props();
 </script>
 
-<svelte:head>
-	<link rel="icon" href="/favicon.svg">
-	<meta property="og:url" content={page.url.href}>
-</svelte:head>
+<svelte:head> <meta property="og:url" content={page.url.href}> </svelte:head>
 
 <style>
 	:global(a) {
@@ -82,7 +78,7 @@
 <nav>
 	<div class="maincontent">
 		<a href="/" class="logo-link">
-			<img src={favicon} alt="">
+			<img src="/favicon.svg" alt="">
 			<span>minipost</span>
 		</a>
 		<a href="/newpost">post</a>

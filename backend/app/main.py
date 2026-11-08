@@ -3,7 +3,7 @@ import logging.handlers
 import os
 import sys
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Annotated, Literal
 
 import argon2
@@ -139,7 +139,7 @@ def login(
     jwt_token = jwt.encode(
         {
             "sub": str(user["user_id"]),
-            "exp": datetime.now(timezone.utc) + timedelta(days=config.JWT_EXPIRY),
+            "exp": datetime.now(UTC) + timedelta(days=config.JWT_EXPIRY),
             "pass_ver": authdata["pass_version"],  # not part of jwt spec
         },
         config.JWT_KEY,
@@ -170,7 +170,7 @@ def transform_user_token(token: Annotated[str, Depends(oauth2_scheme)]) -> db.Us
         user_uuid = uuid.UUID(json_token["sub"])
         authdata = database.get_auth_data(user_uuid)
 
-        if datetime.now(timezone.utc).timestamp() > json_token["exp"]:
+        if datetime.now(UTC).timestamp() > json_token["exp"]:
             raise expired_exception
         if authdata["pass_version"] != json_token["pass_ver"]:
             raise expired_exception
@@ -191,10 +191,7 @@ def transform_user_token(token: Annotated[str, Depends(oauth2_scheme)]) -> db.Us
 
 @app.get("/api/posts")
 def get_latest_posts(count: int = 15) -> list[db.Post]:
-    if count > config.MAX_LATEST_POSTS:
-        count = config.MAX_LATEST_POSTS
-    if count < 1:
-        count = 1
+    count = max(1, min(count, config.MAX_LATEST_POSTS))
     return database.get_latest_posts(count)
 
 
